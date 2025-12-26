@@ -1,0 +1,207 @@
+<% initials = (@client.name || "").split.map { |w| w.first }.join.first(2).upcase.presence || "CL" %>
+
+<div class="mx-auto max-w-7xl space-y-6 pb-12">
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+  <section class="rounded-[32px] bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.10)] overflow-hidden">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              Clients
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+              Modifier
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-3 py-1 text-[11px] font-semibold text-violet-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              <span class="truncate max-w-[520px]"><%= @client.name.presence || "Client ##{@client.id}" %></span>
+            </span>
+          </div>
+
+          <div class="mt-6 flex items-center gap-4">
+            <div class="relative shrink-0">
+              <div class="absolute inset-0 rounded-2xl blur-md"
+                   style="background: radial-gradient(circle, rgba(124,58,237,0.55) 0%, rgba(236,72,153,0.30) 60%, rgba(0,0,0,0) 75%);"></div>
+              <div class="relative flex h-12 w-12 items-center justify-center rounded-2xl text-white text-sm font-semibold shadow-sm ring-1 ring-slate-200
+                          bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                <%= initials %>
+              </div>
+            </div>
+
+            <div class="min-w-0">
+              <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 truncate">
+                Modifier le client
+              </h1>
+              <p class="mt-1 text-sm text-slate-600">
+                Mets à jour les informations du client (utile pour des factures propres).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <%= link_to client_path(@client),
+                      class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+            <span class="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200">←</span>
+            Retour fiche
+          <% end %>
+
+          <%= link_to clients_path,
+                      class: "inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50 transition" do %>
+            Liste clients
+          <% end %>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- FORM -->
+  <!-- ================================================= -->
+  <%= form_with model: @client, url: client_path(@client), method: :patch, class: "space-y-6" do |f| %>
+
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+
+      <div class="p-6">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Informations</p>
+            <h2 class="mt-1 text-lg font-semibold text-slate-900">Profil client</h2>
+          </div>
+
+          <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+            <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+            À jour
+          </span>
+        </div>
+
+        <div class="mt-6 grid gap-6 md:grid-cols-2">
+
+          <!-- Nom -->
+          <div class="md:col-span-2">
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Nom</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.text_field :name,
+                               class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                               placeholder: "Entreprise Dupont" %>
+            </div>
+            <p class="mt-2 text-[11px] text-slate-400">
+              Nom affiché partout (factures, listes, recherche).
+            </p>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Contact</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.text_field :contact_name,
+                               class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                               placeholder: "Jean Dupont" %>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Email</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.email_field :email,
+                                class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                                placeholder: "client@exemple.com" %>
+            </div>
+          </div>
+
+          <!-- Téléphone -->
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Téléphone</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.telephone_field :phone,
+                                    class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                                    placeholder: "+33 6 12 34 56 78" %>
+            </div>
+          </div>
+
+          <!-- Adresse -->
+          <div class="md:col-span-2">
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Adresse</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.text_field :address,
+                               class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                               placeholder: "10 rue de la Paix" %>
+            </div>
+          </div>
+
+          <!-- Code postal -->
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Code postal</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.text_field :zip_code,
+                               class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                               placeholder: "75001" %>
+            </div>
+          </div>
+
+          <!-- Ville -->
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ville</label>
+            <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+              <%= f.text_field :city,
+                               class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                               placeholder: "Paris" %>
+            </div>
+          </div>
+
+          <!-- Pays (si colonne existe) -->
+          <% if @client.respond_to?(:country) %>
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Pays</label>
+              <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+                <%= f.text_field :country,
+                                 class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                                 placeholder: "France" %>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- TVA (si colonne existe) -->
+          <% if @client.respond_to?(:vat_number) %>
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">N° TVA</label>
+              <div class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm transition focus-within:ring-2 focus-within:ring-violet-500">
+                <%= f.text_field :vat_number,
+                                 class: "w-full border-none bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:ring-0",
+                                 placeholder: "FR12345678901" %>
+              </div>
+            </div>
+          <% end %>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- ACTIONS -->
+    <!-- ================================================= -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+      <%= link_to "Annuler",
+                  client_path(@client),
+                  class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" %>
+
+      <%= f.submit "Enregistrer",
+                   class: "inline-flex items-center justify-center rounded-2xl px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]
+                           bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 cursor-pointer" %>
+    </div>
+
+  <% end %>
+
+</div>

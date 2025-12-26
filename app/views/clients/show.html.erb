@@ -1,0 +1,403 @@
+<% invoices        = @client.invoices %>
+<% invoices_count  = invoices.count %>
+<% total_cents     = invoices.sum(:total_cents) %>
+<% paid_count      = invoices.where(status: "paid").count %>
+<% pending_count   = invoices.where(status: "pending").count %>
+<% overdue_count   = invoices.where(status: "overdue").count %>
+<% last_invoice    = invoices.order(issue_date: :desc).first %>
+<% initials        = (@client.name || "").split.map { |w| w.first }.join.first(2).upcase.presence || "CL" %>
+
+<div class="mx-auto max-w-7xl space-y-6 pb-12">
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+  <section class="rounded-[32px] bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.10)] overflow-hidden">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              Client
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+              <span class="truncate max-w-[520px]"><%= @client.name.presence || "Client ##{@client.id}" %></span>
+            </span>
+
+            <% if @client.created_at.present? %>
+              <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                Depuis <%= @client.created_at.to_date.strftime("%d %b %Y") %>
+              </span>
+            <% end %>
+          </div>
+
+          <div class="mt-6 flex items-center gap-4">
+            <div class="relative shrink-0">
+              <div class="absolute inset-0 rounded-2xl blur-md"
+                   style="background: radial-gradient(circle, rgba(124,58,237,0.55) 0%, rgba(236,72,153,0.30) 60%, rgba(0,0,0,0) 75%);"></div>
+              <div class="relative flex h-12 w-12 items-center justify-center rounded-2xl text-white text-sm font-semibold shadow-sm ring-1 ring-slate-200
+                          bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                <%= initials %>
+              </div>
+            </div>
+
+            <div class="min-w-0">
+              <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 truncate">
+                <%= @client.name.presence || "Client ##{@client.id}" %>
+              </h1>
+
+              <% if last_invoice.present? %>
+                <p class="mt-1 text-sm text-slate-600">
+                  Dernière facture :
+                  <span class="font-semibold text-slate-900"><%= last_invoice.issue_date&.strftime("%d %b %Y") %></span>
+                  ·
+                  <span class="font-semibold text-slate-900">
+                    <%= number_to_currency(last_invoice.total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                  </span>
+                </p>
+              <% else %>
+                <p class="mt-1 text-sm text-slate-600">
+                  Aucune facture pour le moment.
+                </p>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <%= link_to clients_path,
+                      class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+            <span class="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200">←</span>
+            Retour
+          <% end %>
+
+          <%= link_to edit_client_path(@client),
+                      class: "inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50 transition" do %>
+            Modifier
+          <% end %>
+
+          <%= link_to new_invoice_path(invoice: { client_id: @client.id }),
+                      class: "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]
+                              bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110" do %>
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20 mr-2">＋</span>
+            Nouvelle facture
+          <% end %>
+
+          <%= button_to "Supprimer",
+                        client_path(@client),
+                        method: :delete,
+                        data: { turbo_confirm: "Tu es sûr de vouloir supprimer ce client ?" },
+                        class: "inline-flex items-center justify-center rounded-2xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-600 transition" %>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- KPIs -->
+  <!-- ================================================= -->
+  <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-0.5 w-full bg-indigo-500/60"></div>
+      <div class="pt-4">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-500">Factures</p>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 ring-1 ring-slate-200">📄</span>
+        </div>
+        <p class="mt-3 text-3xl font-semibold text-slate-900"><%= invoices_count %></p>
+      </div>
+    </div>
+
+    <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-0.5 w-full bg-emerald-500/70"></div>
+      <div class="pt-4">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-500">Payées</p>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 ring-1 ring-emerald-200">✅</span>
+        </div>
+        <p class="mt-3 text-3xl font-semibold text-slate-900"><%= paid_count %></p>
+      </div>
+    </div>
+
+    <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-0.5 w-full bg-amber-500/70"></div>
+      <div class="pt-4">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-500">En attente</p>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 ring-1 ring-amber-200">⏳</span>
+        </div>
+        <p class="mt-3 text-3xl font-semibold text-slate-900"><%= pending_count %></p>
+      </div>
+    </div>
+
+    <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-0.5 w-full bg-rose-500/75"></div>
+      <div class="pt-4">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold text-slate-500">En retard</p>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 ring-1 ring-rose-200">⚠️</span>
+        </div>
+        <p class="mt-3 text-3xl font-semibold text-slate-900"><%= overdue_count %></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- INFO + BILLING -->
+  <!-- ================================================= -->
+  <section class="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+
+    <!-- Coordonnées -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+      <div class="p-6">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Coordonnées</p>
+            <h2 class="mt-1 text-lg font-semibold text-slate-900">Informations client</h2>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Client ID</p>
+            <p class="mt-0.5 text-sm font-semibold text-slate-900"><%= @client.id %></p>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-4 md:grid-cols-2 text-sm text-slate-700">
+
+          <div class="space-y-4">
+            <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Nom</p>
+              <p class="mt-1 font-semibold text-slate-900"><%= @client.name.presence || "—" %></p>
+            </div>
+
+            <% if @client.contact_name.present? %>
+              <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Contact</p>
+                <p class="mt-1 font-semibold text-slate-900"><%= @client.contact_name %></p>
+              </div>
+            <% end %>
+
+            <% if @client.email.present? %>
+              <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Email</p>
+                <p class="mt-1 font-semibold">
+                  <%= mail_to @client.email, @client.email, class: "text-violet-700 hover:text-fuchsia-600" %>
+                </p>
+              </div>
+            <% end %>
+
+            <% if @client.phone.present? %>
+              <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Téléphone</p>
+                <p class="mt-1 font-semibold text-slate-900"><%= @client.phone %></p>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="space-y-4">
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Adresse</p>
+              <% if @client.address.present? || @client.zip_code.present? || @client.city.present? %>
+                <p class="mt-1 font-semibold text-slate-900 leading-snug">
+                  <%= @client.address %><br>
+                  <%= [@client.zip_code, @client.city].compact.join(" ") %>
+                </p>
+              <% else %>
+                <p class="mt-1 text-sm text-slate-500">—</p>
+              <% end %>
+            </div>
+
+            <% if @client.respond_to?(:country) && @client.country.present? %>
+              <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Pays</p>
+                <p class="mt-1 font-semibold text-slate-900"><%= @client.country %></p>
+              </div>
+            <% end %>
+
+            <% if @client.respond_to?(:vat_number) && @client.vat_number.present? %>
+              <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">TVA</p>
+                <p class="mt-1 font-semibold text-slate-900 break-all"><%= @client.vat_number %></p>
+              </div>
+            <% end %>
+
+            <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Créer rapidement</p>
+              <%= link_to new_invoice_path(invoice: { client_id: @client.id }),
+                          class: "mt-2 inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm
+                                  bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" do %>
+                <span class="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">＋</span>
+                Nouvelle facture
+              <% end %>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats financières -->
+    <aside class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="p-6">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Facturation</p>
+        <h2 class="mt-1 text-lg font-semibold text-slate-900">Synthèse</h2>
+
+        <div class="mt-5 space-y-3">
+          <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total facturé</p>
+            <p class="mt-1 text-2xl font-semibold text-slate-900">
+              <%= total_cents.to_i > 0 ? number_to_currency(total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") : "—" %>
+            </p>
+          </div>
+
+          <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Répartition statuts</p>
+            <div class="mt-3 space-y-2 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-2 text-emerald-700">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Payées
+                </span>
+                <span class="font-semibold text-slate-900"><%= paid_count %></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-2 text-amber-700">
+                  <span class="h-2 w-2 rounded-full bg-amber-500"></span> En attente
+                </span>
+                <span class="font-semibold text-slate-900"><%= pending_count %></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-2 text-rose-700">
+                  <span class="h-2 w-2 rounded-full bg-rose-500"></span> En retard
+                </span>
+                <span class="font-semibold text-slate-900"><%= overdue_count %></span>
+              </div>
+            </div>
+          </div>
+
+          <% if last_invoice.present? %>
+            <div class="rounded-2xl bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 ring-1 ring-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Dernière facture</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900 truncate">
+                <%= link_to (last_invoice.number.presence || "Facture ##{last_invoice.id}"),
+                            invoice_path(last_invoice),
+                            class: "hover:text-violet-700 underline underline-offset-4 decoration-slate-200" %>
+              </p>
+              <p class="mt-1 text-sm text-slate-700">
+                <span class="font-semibold"><%= last_invoice.issue_date&.strftime("%d %b %Y") %></span>
+                ·
+                <span class="font-semibold">
+                  <%= number_to_currency(last_invoice.total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                </span>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </aside>
+
+  </section>
+
+  <!-- ================================================= -->
+  <!-- LISTE FACTURES -->
+  <!-- ================================================= -->
+  <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Factures</p>
+          <h2 class="mt-1 text-lg font-semibold text-slate-900">Historique</h2>
+        </div>
+
+        <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
+          <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</p>
+          <p class="mt-0.5 text-sm font-semibold text-slate-900"><%= invoices_count %></p>
+        </div>
+      </div>
+
+      <div class="my-6 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+      <% if invoices_count > 0 %>
+        <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-500">
+              <tr class="text-xs uppercase tracking-wide">
+                <th class="py-3 px-4">Numéro</th>
+                <th class="py-3 px-4">Montant</th>
+                <th class="py-3 px-4">Statut</th>
+                <th class="py-3 px-4">Émission</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody class="text-slate-700">
+              <% invoices.order(issue_date: :desc).each do |invoice| %>
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="py-3 px-4">
+                    <%= link_to (invoice.number.presence || "Facture ##{invoice.id}"),
+                                invoice_path(invoice),
+                                class: "font-semibold text-violet-700 hover:text-fuchsia-600" %>
+                  </td>
+
+                  <td class="py-3 px-4 font-medium text-slate-900">
+                    <%= number_to_currency(invoice.total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                  </td>
+
+                  <td class="py-3 px-4">
+                    <% if invoice.status == "paid" %>
+                      <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Payée
+                      </span>
+                    <% elsif invoice.status == "pending" %>
+                      <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
+                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span> En attente
+                      </span>
+                    <% elsif invoice.status == "overdue" %>
+                      <span class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-200">
+                        <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span> En retard
+                      </span>
+                    <% else %>
+                      <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span> <%= invoice.status || "Brouillon" %>
+                      </span>
+                    <% end %>
+                  </td>
+
+                  <td class="py-3 px-4 text-slate-500">
+                    <%= invoice.issue_date&.strftime("%d %b %Y") || "—" %>
+                  </td>
+
+                  <td class="py-3 px-4 text-right">
+                    <%= link_to "Voir",
+                                invoice_path(invoice),
+                                class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+          <p class="text-lg font-semibold text-slate-900">Aucune facture</p>
+          <p class="mt-2 text-sm text-slate-600 max-w-md mx-auto">
+            Crée une facture pour ce client afin de commencer le suivi.
+          </p>
+          <div class="mt-5">
+            <%= link_to "Créer une facture",
+                        new_invoice_path(invoice: { client_id: @client.id }),
+                        class: "inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm
+                                bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+</div>

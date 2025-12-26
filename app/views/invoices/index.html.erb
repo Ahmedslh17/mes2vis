@@ -1,0 +1,450 @@
+<%# ====== STATS LOCALES (sur la liste filtrée) ====== %>
+<% paid_count    = @invoices.to_a.count  { |inv| inv.status == "paid" } %>
+<% pending_count = @invoices.to_a.count  { |inv| inv.status == "pending" } %>
+<% overdue_count = @invoices.to_a.count  { |inv| inv.status == "overdue" } %>
+
+<% total_status  = paid_count + pending_count + overdue_count %>
+
+<% paid_ratio    = total_status > 0 ? ((paid_count.to_f    / total_status) * 100).round : 0 %>
+<% pending_ratio = total_status > 0 ? ((pending_count.to_f / total_status) * 100).round : 0 %>
+<% overdue_ratio = total_status > 0 ? ((overdue_count.to_f / total_status) * 100).round : 0 %>
+
+<div class="mx-auto max-w-7xl space-y-6 pb-12">
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+  <section class="rounded-[32px] bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.10)] overflow-hidden">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              Factures
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+              Gestion & suivi
+            </span>
+          </div>
+
+          <h1 class="mt-5 text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+            Gestion des factures
+          </h1>
+
+          <p class="mt-1 text-sm text-slate-600">
+            Recherche, filtres, statuts et actions rapides.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <%= link_to new_invoice_path,
+                      class: "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]
+                              bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110" do %>
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20 text-base font-bold leading-none">＋</span>
+            <span>Nouvelle facture</span>
+          <% end %>
+
+          <%= link_to clients_path,
+                      class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+            Clients
+          <% end %>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- TOP: RÉCAP + DOUGHNUT -->
+  <!-- ================================================= -->
+  <div class="grid gap-6 lg:grid-cols-2">
+
+    <!-- Récap -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+      <div class="p-6">
+
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Vue d’ensemble</p>
+            <h2 class="mt-1 text-lg font-semibold text-slate-900">Résumé</h2>
+            <p class="mt-1 text-xs text-slate-500">Basé sur la liste filtrée.</p>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</p>
+            <p class="mt-0.5 text-xl font-semibold text-slate-900"><%= @invoices.size %></p>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Payées</p>
+            <div class="mt-2 flex items-end justify-between">
+              <p class="text-2xl font-semibold text-emerald-900"><%= paid_count %></p>
+              <p class="text-xs font-semibold text-emerald-700"><%= paid_ratio %>%</p>
+            </div>
+            <div class="mt-3 h-2 w-full rounded-full bg-white/60 ring-1 ring-emerald-200 overflow-hidden">
+              <div class="h-full bg-emerald-500" style="width:<%= paid_ratio %>%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-amber-50 ring-1 ring-amber-200 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-amber-700">En attente</p>
+            <div class="mt-2 flex items-end justify-between">
+              <p class="text-2xl font-semibold text-slate-900"><%= pending_count %></p>
+              <p class="text-xs font-semibold text-amber-700"><%= pending_ratio %>%</p>
+            </div>
+            <div class="mt-3 h-2 w-full rounded-full bg-white/60 ring-1 ring-amber-200 overflow-hidden">
+              <div class="h-full bg-amber-500" style="width:<%= pending_ratio %>%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-rose-50 ring-1 ring-rose-200 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-rose-700">En retard</p>
+            <div class="mt-2 flex items-end justify-between">
+              <p class="text-2xl font-semibold text-slate-900"><%= overdue_count %></p>
+              <p class="text-xs font-semibold text-rose-700"><%= overdue_ratio %>%</p>
+            </div>
+            <div class="mt-3 h-2 w-full rounded-full bg-white/60 ring-1 ring-rose-200 overflow-hidden">
+              <div class="h-full bg-rose-500" style="width:<%= overdue_ratio %>%"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Doughnut -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Répartition</p>
+            <h2 class="mt-1 text-lg font-semibold text-slate-900">Statuts</h2>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+            <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+            Liste actuelle
+          </span>
+        </div>
+
+        <div class="mt-5 grid gap-5 md:grid-cols-[220px,1fr] md:items-center">
+          <div class="w-[220px] h-[220px] rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-3 shadow-sm flex items-center justify-center">
+            <div class="relative w-full h-full">
+              <canvas
+                id="status-pie"
+                class="absolute inset-0"
+                data-values="<%= [paid_count, pending_count, overdue_count].to_json %>"></canvas>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 text-[11px]">
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-3 text-center">
+              <div class="inline-flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                <span class="font-semibold text-slate-700">Payées</span>
+              </div>
+              <div class="mt-1 text-base font-semibold text-slate-900"><%= paid_count %></div>
+            </div>
+
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-3 text-center">
+              <div class="inline-flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                <span class="font-semibold text-slate-700">Attente</span>
+              </div>
+              <div class="mt-1 text-base font-semibold text-slate-900"><%= pending_count %></div>
+            </div>
+
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-3 text-center">
+              <div class="inline-flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+                <span class="font-semibold text-slate-700">Retard</span>
+              </div>
+              <div class="mt-1 text-base font-semibold text-slate-900"><%= overdue_count %></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ================================================= -->
+  <!-- FILTRES + LISTE -->
+  <!-- ================================================= -->
+  <%# IMPORTANT: pas de overflow-hidden ici sinon le dropdown Actions peut être coupé %>
+  <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)]">
+    <div class="p-6">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Filtres</p>
+          <h2 class="mt-1 text-lg font-semibold text-slate-900">Liste des factures</h2>
+        </div>
+
+        <% if @invoices.any? %>
+          <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Résultats</p>
+            <p class="mt-0.5 text-sm font-semibold text-slate-900"><%= @invoices.size %></p>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="mt-5">
+        <%= form_with url: invoices_path, method: :get, local: true,
+                      class: "grid gap-3 md:grid-cols-[2fr_1fr_auto]" do %>
+
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Recherche
+            </label>
+            <%= text_field_tag :query,
+                               @query,
+                               placeholder: "Numéro de facture, nom du client…",
+                               class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                       focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Statut
+            </label>
+            <%= select_tag :status,
+                           options_for_select(
+                             [["Tous les statuts", ""],
+                              ["En attente", "pending"],
+                              ["Payée", "paid"],
+                              ["En retard", "overdue"]],
+                             @status
+                           ),
+                           class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                                   focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+
+          <div class="flex items-end justify-end gap-2">
+            <%= submit_tag "Filtrer",
+                           class: "rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm cursor-pointer
+                                   bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" %>
+
+            <%= link_to "Réinitialiser",
+                        invoices_path,
+                        class: "rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="my-6 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+      <!-- Liste -->
+      <% if @invoices.any? %>
+        <div class="space-y-4">
+          <% @invoices.each do |invoice| %>
+            <% border_color =
+                 case invoice.status
+                 when "paid"    then "border-emerald-400"
+                 when "pending" then "border-amber-400"
+                 when "overdue" then "border-rose-400"
+                 else "border-slate-300"
+                 end %>
+
+            <article class="group rounded-2xl bg-white border border-slate-200 border-l-4 <%= border_color %>
+                            px-5 py-4 shadow-sm hover:shadow-md transition
+                            flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
+              <div class="flex-1 space-y-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="text-sm font-semibold text-slate-900 truncate">
+                    <%= invoice.number.presence || "Facture ##{invoice.id}" %>
+                  </p>
+
+                  <% if invoice.status == "paid" %>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                      Payée
+                    </span>
+                  <% elsif invoice.status == "pending" %>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                      <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                      En attente
+                    </span>
+                  <% elsif invoice.status == "overdue" %>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200">
+                      <span class="h-2 w-2 rounded-full bg-rose-600"></span>
+                      En retard
+                    </span>
+                  <% else %>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+                      <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+                      <%= invoice.status || "Brouillon" %>
+                    </span>
+                  <% end %>
+                </div>
+
+                <p class="text-sm font-semibold text-slate-900 flex items-center gap-2 truncate">
+                  <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-slate-200 text-xs">👤</span>
+                  <span class="truncate"><%= invoice.client&.name || "Client inconnu" %></span>
+                </p>
+
+                <p class="text-[11px] text-slate-500">
+                  <% if invoice.issue_date.present? %>
+                    Émise le <span class="font-medium text-slate-700"><%= invoice.issue_date.strftime("%d %b %Y") %></span>
+                  <% end %>
+                  <% if invoice.due_date.present? %>
+                    · Échéance
+                    <span class="font-medium <%= invoice.status == 'overdue' ? 'text-rose-600' : 'text-slate-700' %>">
+                      <%= invoice.due_date.strftime("%d %b %Y") %>
+                    </span>
+                  <% end %>
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between gap-3 md:gap-4 md:justify-end w-full md:w-auto">
+                <div class="text-right">
+                  <p class="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">
+                    Montant TTC
+                  </p>
+                  <p class="text-lg font-semibold text-slate-900">
+                    <%= number_to_currency(invoice.total_cents.to_i / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                  </p>
+                </div>
+
+                <!-- Actions (FIX : visible + au-dessus) -->
+                <div class="relative inline-block text-left isolate z-50">
+                  <details class="group">
+                    <summary class="inline-flex cursor-pointer select-none items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 list-none shadow-sm">
+                      <span class="inline-flex h-6 w-6 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-slate-200">⋯</span>
+                      Actions
+                      <span class="ml-1 text-[10px] text-slate-400 group-open:rotate-180 transition-transform">▾</span>
+                    </summary>
+
+                    <div class="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-200 bg-white p-1
+                                shadow-[0_25px_80px_rgba(15,23,42,0.18)] ring-1 ring-black/5 z-50">
+                      <% item = "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900" %>
+
+                      <%= link_to invoice_path(invoice), class: item do %>
+                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-slate-200">👁️</span>
+                        Voir la facture
+                      <% end %>
+
+                      <%= link_to edit_invoice_path(invoice), class: item do %>
+                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-slate-200">✏️</span>
+                        Modifier
+                      <% end %>
+
+                      <div class="my-1 h-px bg-slate-200"></div>
+
+                      <% if invoice.status != "paid" %>
+                        <%= link_to update_status_invoice_path(invoice, status: "paid"),
+                                    data: { turbo_method: :patch },
+                                    class: item do %>
+                          <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-200">✅</span>
+                          Marquer payée
+                        <% end %>
+                      <% end %>
+
+                      <% if invoice.status != "pending" %>
+                        <%= link_to update_status_invoice_path(invoice, status: "pending"),
+                                    data: { turbo_method: :patch },
+                                    class: item do %>
+                          <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-amber-50 ring-1 ring-amber-200">⏳</span>
+                          Mettre en attente
+                        <% end %>
+                      <% end %>
+
+                      <% if invoice.status != "overdue" %>
+                        <%= link_to update_status_invoice_path(invoice, status: "overdue"),
+                                    data: { turbo_method: :patch },
+                                    class: item do %>
+                          <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-rose-50 ring-1 ring-rose-200">⚠️</span>
+                          Marquer en retard
+                        <% end %>
+                      <% end %>
+
+                      <div class="my-1 h-px bg-slate-200"></div>
+
+                      <%= button_to invoice_path(invoice),
+                                    method: :delete,
+                                    data: { turbo_confirm: "Tu es sûr de vouloir supprimer cette facture ?" },
+                                    class: "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-700 hover:bg-rose-50" do %>
+                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-rose-50 ring-1 ring-rose-200">🗑️</span>
+                        Supprimer
+                      <% end %>
+                    </div>
+                  </details>
+                </div>
+              </div>
+
+            </article>
+          <% end %>
+        </div>
+
+      <% else %>
+        <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+          <p class="text-lg font-semibold text-slate-900">Aucune facture</p>
+          <p class="mt-2 text-sm text-slate-600 max-w-md mx-auto">
+            Crée ta première facture pour commencer à suivre ton activité.
+          </p>
+          <div class="mt-5">
+            <%= link_to "Créer une facture",
+                        new_invoice_path,
+                        class: "inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm
+                                bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" %>
+          </div>
+        </div>
+      <% end %>
+
+    </div>
+  </section>
+</div>
+
+<!-- ====== SCRIPT CAMEMBERT STATUTS ====== -->
+<script>
+  document.addEventListener("turbo:load", function() {
+    const canvas = document.getElementById("status-pie");
+    if (!canvas || typeof Chart === "undefined") return;
+
+    // éviter double init avec Turbo
+    const existing = Chart.getChart ? Chart.getChart(canvas) : null;
+    if (existing) { existing.destroy(); }
+
+    const values = JSON.parse(canvas.dataset.values || "[0,0,0]");
+    const ctx = canvas.getContext("2d");
+
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Payées", "En attente", "En retard"],
+        datasets: [{
+          data: values,
+          backgroundColor: [
+            "rgba(34,197,94,0.95)",
+            "rgba(245,158,11,0.95)",
+            "rgba(244,63,94,0.90)"
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "64%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(2,6,23,0.92)",
+            titleColor: "rgba(255,255,255,0.95)",
+            bodyColor: "rgba(255,255,255,0.92)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.12)",
+            displayColors: false
+          }
+        }
+      }
+    });
+  });
+</script>

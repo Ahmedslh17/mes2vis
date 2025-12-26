@@ -1,0 +1,63 @@
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-10">
+  <div class="w-full max-w-md">
+
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+      <!-- Logo -->
+      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl
+                  bg-gradient-to-br from-indigo-600 to-fuchsia-500
+                  text-xl font-bold text-white shadow-md">
+        m2
+      </div>
+
+      <h1 class="text-3xl font-bold text-white tracking-tight">
+        Mot de passe oublié ?
+      </h1>
+
+      <p class="mt-2 text-sm text-white/80">
+        Entre ton adresse email pour recevoir un lien de réinitialisation.
+      </p>
+    </div>
+
+    <!-- CARD FORMULAIRE -->
+    <div class="rounded-2xl bg-white/95 backdrop-blur-sm p-6 shadow-xl border border-white/20">
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <%= form_for(resource,
+                  as: resource_name,
+                  url: password_path(resource_name),
+                  html: { method: :post }) do |f| %>
+
+        <!-- Email -->
+        <div class="mb-5">
+          <%= f.label :email, "Adresse email",
+                      class: "block text-xs font-semibold uppercase tracking-wide text-slate-600" %>
+
+          <%= f.email_field :email,
+                            autofocus: true,
+                            autocomplete: "email",
+                            placeholder: "toi@exemple.com",
+                            class: "mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm
+                                    text-slate-900 placeholder-slate-400
+                                    focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40" %>
+        </div>
+
+        <!-- Submit -->
+        <div class="mt-4">
+          <%= f.submit "Envoyer les instructions",
+                      class: "w-full cursor-pointer rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600
+                              px-4 py-2.5 text-sm font-medium text-white shadow-md hover:opacity-90 transition" %>
+        </div>
+
+      <% end %>
+    </div>
+
+    <!-- Retour -->
+    <div class="mt-4 text-center">
+      <%= link_to "← Retour à la connexion",
+                  new_session_path(resource_name),
+                  class: "text-xs font-medium text-white/80 hover:text-white" %>
+    </div>
+
+  </div>
+</div>

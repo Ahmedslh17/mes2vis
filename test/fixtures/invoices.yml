@@ -1,0 +1,27 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  number: MyString
+  status: MyString
+  issue_date: 2025-11-29
+  due_date: 2025-11-29
+  currency: MyString
+  subtotal_cents: 1
+  vat_amount_cents: 1
+  total_cents: 1
+  notes: MyText
+  company: one
+  client: one
+
+two:
+  number: MyString
+  status: MyString
+  issue_date: 2025-11-29
+  due_date: 2025-11-29
+  currency: MyString
+  subtotal_cents: 1
+  vat_amount_cents: 1
+  total_cents: 1
+  notes: MyText
+  company: two
+  client: two

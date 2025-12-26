@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+
+  <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f5f5f5; padding: 24px; margin: 0;">
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 24px; border-radius: 12px;">
+
+      <% company = @company || @invoice&.company %>
+
+      <!-- Header avec logo -->
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+        <% if company&.logo&.attached? %>
+          <%= image_tag url_for(company.logo),
+                        alt: company.name,
+                        style: "max-height: 40px; max-width: 160px; object-fit: contain;" %>
+        <% else %>
+          <div style="width: 40px; height: 40px; border-radius: 999px; background: #020617; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
+            <%= (company&.name || 'mes2vis').to_s.first(2).upcase %>
+          </div>
+        <% end %>
+
+        <div style="font-size: 13px; color: #64748b;">
+          <div style="font-weight: 600; color: #0f172a;"><%= company&.name || "mes2vis" %></div>
+          <div>Facturation avec mes2vis</div>
+        </div>
+      </div>
+
+      <!-- Contenu de l'email -->
+      <%= yield %>
+
+    </div>
+  </body>
+</html>

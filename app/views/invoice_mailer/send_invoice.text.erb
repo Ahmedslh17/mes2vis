@@ -1,0 +1,18 @@
+Bonjour <%= @client.name %>,
+
+Vous trouverez en pièce jointe votre facture émise par <%= @company.name %>.
+
+Facture : <%= @invoice.number.presence || "Facture ##{@invoice.id}" %>
+Date d’émission : <%= @invoice.issue_date&.strftime("%d %b %Y") %>
+Date d’échéance : <%= @invoice.due_date&.strftime("%d %b %Y") %>
+
+Montant TTC : <%= number_to_currency(@invoice.total_cents.to_f / 100.0,
+                                     unit: "€", separator: ",", delimiter: " ") %>
+
+Conditions :
+<%= @invoice.notes.presence || "Aucune condition particulière indiquée." %>
+
+Si vous avez des questions, vous pouvez répondre directement à cet email.
+
+Merci pour votre confiance,
+<%= @company.name %>

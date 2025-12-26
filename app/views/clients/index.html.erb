@@ -1,0 +1,355 @@
+<div class="mx-auto max-w-7xl space-y-6 pb-12">
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+  <section class="rounded-[32px] bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.10)] overflow-hidden">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              CRM
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+              Clients
+            </span>
+          </div>
+
+          <h1 class="mt-5 text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+            Gestion des clients
+          </h1>
+
+          <p class="mt-1 text-sm text-slate-600">
+            Base clients, suivi factures et actions rapides.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <%= link_to new_client_path,
+                      class: "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]
+                              bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110" do %>
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20 text-base font-bold leading-none">＋</span>
+            <span>Nouveau client</span>
+          <% end %>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <% if @clients.any? %>
+    <% total_clients        = @clients.size %>
+    <% total_invoices       = @clients.sum { |c| c.respond_to?(:invoices) ? c.invoices.count : 0 } %>
+    <% total_invoiced_cents = @clients.sum { |c| c.respond_to?(:invoices) ? c.invoices.sum(:total_cents) : 0 } %>
+
+    <% per_client_totals = @clients.map do |c|
+         invoices = c.respond_to?(:invoices) ? c.invoices : []
+         [c, invoices.count, invoices.sum(:total_cents)]
+       end %>
+    <% top_clients = per_client_totals.sort_by { |(_, _, total)| -total.to_i }.first(5) %>
+
+    <!-- ================================================= -->
+    <!-- TOP: STATS + TOP CLIENTS -->
+    <!-- ================================================= -->
+    <div class="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
+
+      <!-- STATS -->
+      <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+        <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+        <div class="p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Vue d’ensemble</p>
+              <h2 class="mt-1 text-lg font-semibold text-slate-900">Résumé</h2>
+              <p class="mt-1 text-xs text-slate-500">Basé sur ta base clients.</p>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Clients</p>
+              <p class="mt-0.5 text-xl font-semibold text-slate-900"><%= total_clients %></p>
+            </div>
+          </div>
+
+          <div class="mt-5 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Clients actifs</p>
+              <p class="mt-2 text-2xl font-semibold text-slate-900"><%= total_clients %></p>
+              <p class="mt-1 text-[11px] text-slate-500">Présents dans ta base.</p>
+            </div>
+
+            <div class="rounded-2xl bg-indigo-50 ring-1 ring-indigo-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-indigo-700">Factures</p>
+              <p class="mt-2 text-2xl font-semibold text-indigo-900"><%= total_invoices %></p>
+              <p class="mt-1 text-[11px] text-indigo-700/80">Liées à ces clients.</p>
+            </div>
+
+            <div class="rounded-2xl bg-emerald-50 ring-1 ring-emerald-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Total facturé</p>
+              <p class="mt-2 text-lg font-semibold text-emerald-900">
+                <% if total_invoiced_cents.to_i > 0 %>
+                  <%= number_to_currency(total_invoiced_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                <% else %>
+                  —
+                <% end %>
+              </p>
+              <p class="mt-1 text-[11px] text-emerald-700/80">Somme des factures.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOP CLIENTS -->
+      <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Classement</p>
+              <h2 class="mt-1 text-lg font-semibold text-slate-900">Top clients</h2>
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              <%= top_clients.size %>
+            </span>
+          </div>
+
+          <% if top_clients.present? && top_clients.any? { |(_, _, total)| total.to_i > 0 } %>
+            <div class="mt-4 space-y-3">
+              <% top_clients.each_with_index do |(client, count, total_cents), idx| %>
+                <% next if total_cents.to_i <= 0 %>
+                <% initials = (client.name || "").split.map { |w| w.first }.join.first(2).upcase.presence || "CL" %>
+                <% rank =
+                    case idx
+                    when 0 then "bg-amber-50 text-amber-800 ring-1 ring-amber-200"
+                    when 1 then "bg-slate-100 text-slate-700 ring-1 ring-slate-200"
+                    else "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200"
+                    end %>
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-sm transition">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl text-white text-sm font-semibold shadow-sm ring-1 ring-slate-200
+                                bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                      <%= initials %>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-start justify-between gap-3">
+                        <p class="truncate text-sm font-semibold text-slate-900">
+                          <%= client.name.presence || "Client ##{client.id}" %>
+                        </p>
+                        <span class="shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold <%= rank %>">
+                          Top <%= idx + 1 %>
+                        </span>
+                      </div>
+
+                      <p class="mt-1 text-[11px] text-slate-500">
+                        <%= count %> facture<%= "s" if count.to_i > 1 %>
+                      </p>
+
+                      <p class="mt-2 text-sm font-semibold text-slate-900">
+                        <%= number_to_currency(total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="mt-3 text-right">
+                    <%= link_to "Voir →", client_path(client), class: "text-sm font-semibold text-violet-700 hover:text-fuchsia-600" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="mt-4 rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+              <p class="text-sm font-semibold text-slate-900">Pas de classement</p>
+              <p class="mt-1 text-xs text-slate-600">Crée quelques factures pour voir les meilleurs clients ici.</p>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================================================= -->
+    <!-- LIST: SEARCH + TABLE -->
+    <!-- ================================================= -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+      <div class="p-6">
+
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recherche</p>
+            <h2 class="mt-1 text-lg font-semibold text-slate-900">Liste des clients</h2>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Total</p>
+            <p class="mt-0.5 text-sm font-semibold text-slate-900"><%= total_clients %></p>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <%= form_with url: clients_path, method: :get, local: true, class: "grid gap-3 md:grid-cols-[2fr_auto]" do %>
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Rechercher
+              </label>
+              <div class="relative mt-1">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔍</span>
+                <%= text_field_tag :query,
+                                   params[:query],
+                                   placeholder: "Nom, email, contact…",
+                                   class: "w-full rounded-2xl border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder-slate-400
+                                           focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+              </div>
+            </div>
+
+            <div class="flex items-end justify-end gap-2">
+              <%= submit_tag "Filtrer",
+                             class: "rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm cursor-pointer
+                                     bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" %>
+
+              <%= link_to "Réinitialiser",
+                          clients_path,
+                          class: "rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="my-6 h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <th class="py-3 pr-4">Client</th>
+                <th class="py-3 pr-4">Contact</th>
+                <th class="py-3 pr-4">Email</th>
+                <th class="py-3 pr-4">Téléphone</th>
+                <th class="py-3 pr-4 text-right">Factures</th>
+                <th class="py-3 pr-4 text-right">Total</th>
+                <th class="py-3 pr-2 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody class="text-slate-700">
+              <% @clients.each do |client| %>
+                <% invoices_count = client.respond_to?(:invoices) ? client.invoices.count : 0 %>
+                <% total_cents    = client.respond_to?(:invoices) ? client.invoices.sum(:total_cents) : 0 %>
+                <% initials       = (client.name || "").split.map { |w| w.first }.join.first(2).upcase.presence || "CL" %>
+
+                <tr class="group border-b border-slate-100 hover:bg-slate-50 transition">
+                  <td class="py-3 pr-4">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-9 w-9 items-center justify-center rounded-2xl text-white text-xs font-semibold shadow-sm ring-1 ring-slate-200
+                                  bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                        <%= initials %>
+                      </div>
+
+                      <div class="min-w-0">
+                        <%= link_to (client.name.presence || "Client ##{client.id}"),
+                                    client_path(client),
+                                    class: "block truncate text-sm font-semibold text-slate-900 hover:text-violet-700" %>
+
+                        <% if client.email.present? %>
+                          <p class="truncate text-[11px] text-slate-500"><%= client.email %></p>
+                        <% else %>
+                          <p class="text-[11px] text-slate-400">—</p>
+                        <% end %>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-3 pr-4 text-sm">
+                    <% if client.respond_to?(:contact_name) && client.contact_name.present? %>
+                      <span class="font-medium text-slate-800"><%= client.contact_name %></span>
+                    <% else %>
+                      <span class="text-[11px] text-slate-400">—</span>
+                    <% end %>
+                  </td>
+
+                  <td class="py-3 pr-4 text-sm">
+                    <% if client.email.present? %>
+                      <%= mail_to client.email, client.email, class: "text-slate-700 hover:text-violet-700" %>
+                    <% else %>
+                      <span class="text-[11px] text-slate-400">Non renseigné</span>
+                    <% end %>
+                  </td>
+
+                  <td class="py-3 pr-4 text-sm">
+                    <% if client.respond_to?(:phone) && client.phone.present? %>
+                      <%= client.phone %>
+                    <% else %>
+                      <span class="text-[11px] text-slate-400">—</span>
+                    <% end %>
+                  </td>
+
+                  <td class="py-3 pr-4 text-right">
+                    <% if invoices_count > 0 %>
+                      <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                        <%= invoices_count %>
+                      </span>
+                    <% else %>
+                      <span class="text-[11px] text-slate-400">—</span>
+                    <% end %>
+                  </td>
+
+                  <td class="py-3 pr-4 text-right">
+                    <% if total_cents.to_i > 0 %>
+                      <span class="font-semibold text-slate-900">
+                        <%= number_to_currency(total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                      </span>
+                    <% else %>
+                      <span class="text-[11px] text-slate-400">—</span>
+                    <% end %>
+                  </td>
+
+                  <td class="py-3 pr-2 text-right">
+                    <div class="inline-flex items-center gap-2">
+                      <%= link_to "Voir",
+                                  client_path(client),
+                                  class: "inline-flex items-center rounded-2xl bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 transition" %>
+
+                      <%= link_to "Modifier",
+                                  edit_client_path(client),
+                                  class: "inline-flex items-center rounded-2xl bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200 hover:bg-indigo-100 transition" %>
+
+                      <%= button_to "Supprimer",
+                                    client_path(client),
+                                    method: :delete,
+                                    data: { turbo_confirm: "Tu es sûr de vouloir supprimer ce client ?" },
+                                    class: "inline-flex items-center rounded-2xl bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100 transition" %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+  <% else %>
+    <!-- EMPTY STATE -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] p-10 text-center">
+      <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-xl ring-1 ring-indigo-200">
+        🧑‍💼
+      </div>
+      <h2 class="text-lg font-semibold text-slate-900">Aucun client</h2>
+      <p class="mt-2 text-sm text-slate-600 max-w-md mx-auto">
+        Ajoute ton premier client pour commencer à facturer proprement.
+      </p>
+      <div class="mt-5">
+        <%= link_to "Ajouter un client",
+                    new_client_path,
+                    class: "inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm
+                            bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" %>
+      </div>
+    </section>
+  <% end %>
+
+</div>

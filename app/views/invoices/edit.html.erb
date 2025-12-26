@@ -1,0 +1,332 @@
+<div class="mx-auto max-w-7xl space-y-6 pb-12">
+
+  <!-- ================================================= -->
+  <!-- TOP BAR -->
+  <!-- ================================================= -->
+  <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div class="flex flex-wrap items-center gap-2 text-[11px]">
+      <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700 ring-1 ring-slate-200">
+        <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+        Factures
+      </span>
+      <span class="text-slate-400">/</span>
+      <span class="font-semibold text-slate-800">
+        <%= @invoice.number.presence || "Facture ##{@invoice.id}" %>
+      </span>
+      <span class="text-slate-400">/</span>
+      <span class="font-semibold text-slate-800">Modifier</span>
+    </div>
+
+    <%= link_to invoice_path(@invoice),
+                class: "inline-flex items-center gap-2 rounded-2xl bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 shadow-sm hover:bg-slate-50 transition" do %>
+      <span class="inline-flex h-6 w-6 items-center justify-center rounded-xl bg-slate-100 ring-1 ring-slate-200">←</span>
+      <span>Retour fiche</span>
+    <% end %>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- HEADER CARD -->
+  <!-- ================================================= -->
+  <section class="rounded-[32px] bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.10)] overflow-hidden">
+    <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div class="min-w-0">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Modifier</p>
+          <h1 class="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+            Facture
+            <span class="text-slate-400 font-semibold">·</span>
+            <span class="text-slate-900"><%= @invoice.number.presence || "##{@invoice.id}" %></span>
+          </h1>
+          <p class="mt-1 text-sm text-slate-600">
+            Mets à jour les infos, puis sauvegarde.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <%= link_to invoice_path(@invoice, format: :pdf),
+                      target: "_blank",
+                      class: "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold text-white shadow-sm
+                              bg-slate-900 hover:bg-slate-800 transition" do %>
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/10">⬇️</span>
+            PDF
+          <% end %>
+
+          <%= link_to invoice_path(@invoice),
+                      class: "inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white ring-1 ring-slate-200">👁️</span>
+            Voir
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%= form_with model: @invoice, local: true, class: "space-y-6" do |f| %>
+
+    <!-- ================================================= -->
+    <!-- CLIENT -->
+    <!-- ================================================= -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden"
+             data-controller="client-preview"
+             data-client-preview-clients-value="<%= @clients.map { |c|
+               {
+                 id: c.id,
+                 name: c.name,
+                 email: c.email,
+                 address: (c.respond_to?(:address) ? c.address : nil),
+                 zip_code: (c.respond_to?(:zip_code) ? c.zip_code : nil),
+                 city: (c.respond_to?(:city) ? c.city : nil),
+                 phone: (c.respond_to?(:phone) ? c.phone : nil)
+               }
+             }.to_json %>">
+
+      <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+          <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+          Client
+        </h2>
+
+        <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+          <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+          Obligatoire
+        </span>
+      </div>
+
+      <div class="grid gap-6 px-6 py-6 md:grid-cols-2">
+        <div>
+          <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            Sélection
+          </label>
+
+          <%= f.collection_select :client_id,
+                @clients, :id, :name,
+                { prompt: "Sélectionner un client" },
+                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500",
+                data: { client_preview_target: "select", action: "change->client-preview#change" } %>
+
+          <p class="mt-2 text-[11px] text-slate-500">
+            Les coordonnées sont récupérées depuis la fiche client.
+          </p>
+        </div>
+
+        <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4 text-sm text-slate-700"
+             data-client-preview-target="details">
+          <% if @invoice.client.present? %>
+            <% client = @invoice.client %>
+
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Aperçu
+            </p>
+
+            <div class="mt-2 space-y-1 text-xs">
+              <% if client.email.present? %>
+                <p><span class="font-semibold text-slate-600">Email :</span> <%= client.email %></p>
+              <% end %>
+
+              <% if client.address.present? || client.city.present? || client.zip_code.present? %>
+                <p class="leading-snug">
+                  <span class="font-semibold text-slate-600">Adresse :</span>
+                  <%= client.address %><br>
+                  <%= [client.zip_code, client.city].compact.join(" ") %>
+                </p>
+              <% end %>
+
+              <% if client.phone.present? %>
+                <p><span class="font-semibold text-slate-600">Téléphone :</span> <%= client.phone %></p>
+              <% end %>
+
+              <% if client.email.blank? && client.address.blank? && client.phone.blank? && client.city.blank? && client.zip_code.blank? %>
+                <p class="text-slate-500">Aucune coordonnée renseignée.</p>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-xs text-slate-500">
+              Sélectionne un client pour afficher ses coordonnées.
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- FACTURE -->
+    <!-- ================================================= -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+          <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+          Informations facture
+        </h2>
+
+        <span class="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200">
+          <span class="h-1.5 w-1.5 rounded-full bg-indigo-600"></span>
+          Numéro auto si vide
+        </span>
+      </div>
+
+      <div class="grid gap-6 px-6 py-6 md:grid-cols-2">
+        <div class="space-y-4">
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Numéro</label>
+            <%= f.text_field :number,
+                  placeholder: "Conserver (laisser vide) ou modifier",
+                  class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                          focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Statut</label>
+            <%= f.select :status,
+                  [["En attente", "pending"], ["Payée", "paid"], ["En retard", "overdue"]],
+                  { prompt: "Choisir" },
+                  class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                          focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Émise le</label>
+              <%= f.date_field :issue_date,
+                    class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                            focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+            </div>
+
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Échéance</label>
+              <%= f.date_field :due_date,
+                    class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                            focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Conditions</label>
+            <%= f.text_field :notes,
+                  placeholder: "Ex : Paiement à 30 jours",
+                  class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                          focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- LIGNES -->
+    <!-- ================================================= -->
+    <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden"
+             data-controller="invoice-items">
+
+      <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+          <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+          Lignes de facture
+        </h2>
+
+        <button type="button"
+                data-action="click->invoice-items#add"
+                class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold text-white shadow-sm
+                       bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition">
+          <span class="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/15 text-base leading-none">＋</span>
+          Ajouter
+        </button>
+      </div>
+
+      <div class="grid gap-6 px-6 py-6 md:grid-cols-[2fr_1fr]">
+
+        <!-- Tableau -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <table class="min-w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-500">
+              <tr>
+                <th class="px-3 py-3 font-semibold uppercase tracking-wide text-[10px]">Description</th>
+                <th class="px-3 py-3 font-semibold uppercase tracking-wide text-[10px]">Qté</th>
+                <th class="px-3 py-3 font-semibold uppercase tracking-wide text-[10px]">PU (€)</th>
+                <th class="px-3 py-3 font-semibold uppercase tracking-wide text-[10px]">TVA (%)</th>
+                <th class="px-3 py-3 font-semibold uppercase tracking-wide text-[10px] text-right"></th>
+              </tr>
+            </thead>
+
+            <tbody class="text-slate-900" data-invoice-items-target="container">
+              <%= f.fields_for :invoice_items do |item_form| %>
+                <tr class="border-t border-slate-100 hover:bg-slate-50">
+                  <td class="px-3 py-3">
+                    <%= item_form.text_field :description,
+                          placeholder: "Prestation…",
+                          class: "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs
+                                  focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                  </td>
+
+                  <td class="px-3 py-3">
+                    <%= item_form.number_field :quantity,
+                          step: "0.01",
+                          class: "w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-right
+                                  focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                  </td>
+
+                  <td class="px-3 py-3">
+                    <%= item_form.text_field :unit_price_eur,
+                          placeholder: "1200,00",
+                          class: "w-28 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-right
+                                  focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                  </td>
+
+                  <td class="px-3 py-3">
+                    <%= item_form.number_field :vat_rate,
+                          step: "0.01",
+                          class: "w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-right
+                                  focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                  </td>
+
+                  <td class="px-3 py-3 text-right">
+                    <%= item_form.hidden_field :_destroy %>
+                    <button type="button"
+                            data-action="click->invoice-items#remove"
+                            class="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100 transition">
+                      ✕ Supprimer
+                    </button>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Info / Totaux -->
+        <div class="rounded-3xl bg-slate-50 ring-1 ring-slate-200 p-5">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Totaux</p>
+          <h3 class="mt-1 text-sm font-semibold text-slate-900">Calcul automatique</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Les montants HT/TVA/TTC sont recalculés à l’enregistrement selon tes lignes.
+          </p>
+
+          <div class="mt-4 rounded-2xl bg-white ring-1 ring-slate-200 p-4 text-xs text-slate-700">
+            <p class="font-semibold text-slate-900">Astuce</p>
+            <p class="mt-1 text-slate-600">
+              Utilise des quantités décimales (ex : 1,5) si besoin.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- FOOT ACTIONS -->
+    <!-- ================================================= -->
+    <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+      <%= link_to invoice_path(@invoice),
+                  class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+        Annuler
+      <% end %>
+
+      <%= f.submit "Enregistrer",
+                  class: "inline-flex items-center justify-center rounded-2xl px-6 py-2.5 text-sm font-semibold text-white shadow-sm cursor-pointer
+                          bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition" %>
+    </div>
+
+  <% end %>
+</div>

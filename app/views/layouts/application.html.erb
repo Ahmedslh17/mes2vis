@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>mes2vis</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen flex flex-col text-slate-100">
+    <!-- ================================================= -->
+    <!-- BACKGROUND — gris premium + glows violet discrets -->
+    <!-- ================================================= -->
+    <div class="fixed inset-0 -z-10">
+      <!-- Base premium gray -->
+      <div class="absolute inset-0"
+           style="background: linear-gradient(180deg, #f6f7fb 0%, #eef1f6 55%, #e9edf4 100%);">
+      </div>
+
+      <!-- Soft vignette -->
+      <div class="absolute inset-0"
+           style="background: radial-gradient(1200px 700px at 50% 35%, rgba(15,23,42,0.00) 0%, rgba(15,23,42,0.06) 70%, rgba(15,23,42,0.10) 100%);">
+      </div>
+
+      <!-- Ultra subtle violet glows (logo coherence) -->
+      <div class="absolute -top-44 -left-44 h-[640px] w-[640px] rounded-full blur-[120px]"
+           style="background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.00) 70%);">
+      </div>
+
+      <div class="absolute -bottom-56 -right-56 h-[680px] w-[680px] rounded-full blur-[140px]"
+           style="background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, rgba(236,72,153,0.00) 70%);">
+      </div>
+
+      <!-- Subtle dot texture -->
+      <div class="absolute inset-0 opacity-[0.08]"
+           style="background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,0.12) 1px, transparent 0);
+                  background-size: 24px 24px;">
+      </div>
+
+      <!-- Soft noise -->
+      <div class="absolute inset-0 opacity-[0.05] mix-blend-multiply"
+           style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%220.55%22/%3E%3C/svg%3E');">
+      </div>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- NAVBAR — sombre premium -->
+    <!-- ================================================= -->
+    <header class="sticky top-0 z-50 border-b border-white/10 bg-[#0b1226]/92 backdrop-blur">
+      <div class="mx-auto max-w-[1600px] px-6">
+        <div class="flex h-16 items-center justify-between">
+
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500 text-white font-semibold shadow">
+              m2
+            </div>
+            <span class="text-lg font-semibold tracking-tight text-white">mes2vis</span>
+          </div>
+
+          <nav class="hidden gap-8 text-sm font-medium md:flex">
+            <%= link_to "Dashboard", dashboard_path,
+              class: "pb-1 border-b-2 border-transparent hover:border-white #{current_page?(dashboard_path) ? 'border-white text-white' : 'text-slate-200'}" %>
+
+            <%= link_to "Factures", invoices_path,
+              class: "pb-1 border-b-2 border-transparent hover:border-white #{controller_name == 'invoices' ? 'border-white text-white' : 'text-slate-200'}" %>
+
+            <%= link_to "Clients", clients_path,
+              class: "pb-1 border-b-2 border-transparent hover:border-white #{controller_name == 'clients' ? 'border-white text-white' : 'text-slate-200'}" %>
+
+            <%= link_to "Abonnement", subscription_path,
+              class: "pb-1 border-b-2 border-transparent hover:border-white #{current_page?(subscription_path) ? 'border-white text-white' : 'text-slate-200'}" %>
+
+            <%= link_to "Paramètres", edit_settings_path,
+              class: "pb-1 border-b-2 border-transparent hover:border-white #{controller_name == 'settings' ? 'border-white text-white' : 'text-slate-200'}" %>
+          </nav>
+
+          <div class="flex items-center gap-4">
+            <% if user_signed_in? %>
+              <span class="hidden text-sm text-slate-200 md:inline"><%= current_user.email %></span>
+
+              <div class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white ring-1 ring-white/15">
+                <%= current_user.email.to_s.first(2).upcase %>
+              </div>
+
+              <%= button_to "Se déconnecter",
+                destroy_user_session_path,
+                method: :delete,
+                class: "rounded-xl bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 hover:bg-white/15" %>
+            <% end %>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- ================================================= -->
+    <!-- CONTENU -->
+    <!-- ================================================= -->
+    <main class="flex-1 py-10">
+      <div class="mx-auto w-full max-w-[1600px] px-6">
+        <% if notice.present? %>
+          <div class="mb-4 rounded-2xl bg-emerald-500/15 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-400/30">
+            <%= notice %>
+          </div>
+        <% end %>
+
+        <% if alert.present? %>
+          <div class="mb-4 rounded-2xl bg-rose-500/15 px-4 py-3 text-sm text-rose-900 ring-1 ring-rose-400/30">
+            <%= alert %>
+          </div>
+        <% end %>
+
+        <%= yield %>
+      </div>
+    </main>
+
+    <!-- ================================================= -->
+    <!-- FOOTER — sombre -->
+    <!-- ================================================= -->
+    <footer class="border-t border-white/10 bg-[#0b1226]/92 backdrop-blur">
+      <div class="mx-auto max-w-[1600px] px-6 flex flex-col gap-3 py-4 text-sm text-slate-200 md:flex-row md:items-center md:justify-between">
+
+        <div class="flex items-center gap-2">
+          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500 text-white text-xs font-semibold shadow">
+            m2
+          </div>
+          <span class="font-medium text-white">mes2vis</span>
+          <span class="text-slate-400">·</span>
+          <span class="text-xs text-slate-300">v1.0.0</span>
+        </div>
+
+        <div class="flex items-center gap-5 text-xs">
+          <%= link_to "Mentions légales", legal_mentions_path, class: "hover:text-white" %>
+          <%= link_to "Confidentialité", privacy_path, class: "hover:text-white" %>
+          <%= link_to "Support", support_path, class: "hover:text-white" %>
+        </div>
+
+        <p class="text-slate-300 text-[11px]">
+          © <%= Time.current.year %> mes2vis — Tous droits réservés
+        </p>
+      </div>
+    </footer>
+
+  </body>
+</html>

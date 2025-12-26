@@ -1,0 +1,445 @@
+<div data-turbo="false" class="mx-auto max-w-7xl pb-12">
+  <%# ---------------------------- %>
+  <%# DATA (safe)                  %>
+  <%# ---------------------------- %>
+  <% total_status  = @paid_invoices_count.to_i + @pending_invoices_count.to_i + @overdue_invoices_count.to_i %>
+  <% paid_ratio    = total_status > 0 ? ((@paid_invoices_count.to_f  / total_status) * 100).round : 0 %>
+  <% pending_ratio = total_status > 0 ? ((@pending_invoices_count.to_f / total_status) * 100).round : 0 %>
+  <% overdue_ratio = total_status > 0 ? ((@overdue_invoices_count.to_f / total_status) * 100).round : 0 %>
+
+  <% overdue_alert = @overdue_invoices_count.to_i > 0 %>
+  <% pending_alert = @pending_invoices_count.to_i > 0 %>
+
+  <% top_clients =
+       @company.clients
+               .left_joins(:invoices)
+               .group("clients.id")
+               .select("clients.*",
+                       "COUNT(invoices.id) AS invoices_count",
+                       "COALESCE(SUM(invoices.total_cents), 0) AS total_cents_sum")
+               .order("total_cents_sum DESC")
+               .limit(6)
+  %>
+  <% top_clients_total_cents = top_clients.sum { |c| (c.try(:total_cents_sum) || 0).to_i } %>
+
+  <!-- ================================================= -->
+  <!-- HEADER (compact) -->
+  <!-- ================================================= -->
+  <section class="rounded-[32px] bg-white/92 backdrop-blur ring-1 ring-slate-200 shadow-sm overflow-hidden">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+
+        <!-- Left -->
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              Vue d’ensemble
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+              <span class="truncate max-w-[460px]"><%= @company.name %></span>
+            </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+              <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+              À jour
+            </span>
+
+            <% if overdue_alert %>
+              <span class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-800 ring-1 ring-rose-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                <%= @overdue_invoices_count %> retard
+              </span>
+            <% end %>
+          </div>
+
+          <div class="mt-6 flex items-center gap-4">
+            <div class="relative shrink-0">
+              <div class="absolute inset-0 rounded-2xl blur-md"
+                   style="background: radial-gradient(circle, rgba(124,58,237,0.55) 0%, rgba(236,72,153,0.35) 60%, rgba(0,0,0,0) 75%);"></div>
+              <div class="relative flex h-12 w-12 items-center justify-center rounded-2xl text-white text-sm font-semibold shadow-sm ring-1 ring-slate-200
+                          bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                m2
+              </div>
+            </div>
+
+            <div class="min-w-0">
+              <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+              <p class="mt-1 text-sm text-slate-600">Pilotage en un coup d’œil</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div class="w-full max-w-xl">
+          <div class="flex flex-wrap items-center justify-start gap-2.5 lg:justify-end">
+            <%= link_to new_invoice_path,
+              class: "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99]
+                      bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110" do %>
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20 mr-2">＋</span>
+              Nouvelle facture
+            <% end %>
+
+            <%= link_to invoices_path,
+              class: "inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50 transition" do %>
+              Factures
+            <% end %>
+
+            <%= link_to clients_path,
+              class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+              Clients
+            <% end %>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- ZONE STRUCTURÉE (FOND) : Graph + KPI + Actions + Top clients -->
+  <!-- ================================================= -->
+  <section class="mt-10 rounded-[36px] ring-1 ring-slate-200 overflow-hidden"
+           style="background: linear-gradient(180deg, rgba(245,246,252,1) 0%, rgba(239,241,248,1) 100%);">
+    <div class="p-6 md:p-8">
+
+      <!-- ================================================= -->
+      <!-- GRAPH -->
+      <!-- ================================================= -->
+      <div class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+        <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+
+        <div class="p-5 md:p-6">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold text-slate-500">Chiffre d’affaires</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">6 derniers mois</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-3 py-1 text-xs font-semibold text-violet-700 ring-1 ring-slate-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+                CA mensuel
+              </span>
+              <%= link_to "Détails →", invoices_path, class: "text-sm font-semibold text-violet-700 hover:text-fuchsia-600" %>
+            </div>
+          </div>
+
+          <!-- ✅ Graph réduit -->
+          <div class="mt-5 rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+            <div class="relative h-[260px] md:h-[320px] lg:h-[340px]">
+              <canvas
+                id="revenue-chart"
+                class="absolute inset-0 h-full w-full"
+                data-labels="<%= @revenue_labels.to_json %>"
+                data-values="<%= @revenue_amounts_cents.to_json %>"></canvas>
+            </div>
+          </div>
+
+          <!-- Micro blocks (utiles, courts) -->
+          <div class="mt-6 grid gap-4 sm:grid-cols-3">
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">CA mois</p>
+              <p class="mt-1 text-lg font-semibold text-slate-900">
+                <%= number_to_currency(@month_amount_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+              </p>
+            </div>
+
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Paiement</p>
+              <p class="mt-1 text-lg font-semibold text-slate-900"><%= paid_ratio %>%</p>
+              <div class="mt-3 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500" style="width:<%= paid_ratio %>%"></div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">En retard</p>
+              <p class="mt-1 text-lg font-semibold <%= overdue_alert ? 'text-rose-700' : 'text-slate-900' %>">
+                <%= @overdue_invoices_count %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div class="h-8"></div>
+
+      <!-- ================================================= -->
+      <!-- KPI -->
+      <!-- ================================================= -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <!-- Total -->
+        <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-sm hover:shadow-md transition overflow-hidden">
+          <div class="h-0.5 w-full bg-indigo-500/60"></div>
+          <div class="pt-4">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-semibold text-slate-500">Total</p>
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 ring-1 ring-slate-200">📄</span>
+            </div>
+            <p class="mt-3 text-3xl font-semibold text-slate-900"><%= @total_invoices_count %></p>
+          </div>
+        </div>
+
+        <!-- Payées -->
+        <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-sm hover:shadow-md transition overflow-hidden">
+          <div class="h-0.5 w-full bg-emerald-500/70"></div>
+          <div class="pt-4">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-semibold text-slate-500">Payées</p>
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 ring-1 ring-emerald-200">✅</span>
+            </div>
+            <div class="mt-3 flex items-end justify-between">
+              <p class="text-3xl font-semibold text-slate-900"><%= @paid_invoices_count %></p>
+              <span class="text-xs font-semibold text-emerald-700"><%= paid_ratio %>%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- En attente -->
+        <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-sm hover:shadow-md transition overflow-hidden">
+          <div class="h-0.5 w-full bg-amber-500/70"></div>
+          <div class="pt-4">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-semibold text-slate-500">En attente</p>
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 ring-1 ring-amber-200">⏳</span>
+            </div>
+            <div class="mt-3 flex items-end justify-between">
+              <p class="text-3xl font-semibold text-slate-900"><%= @pending_invoices_count %></p>
+              <span class="text-xs font-semibold text-amber-700"><%= pending_ratio %>%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- En retard -->
+        <div class="rounded-3xl bg-white ring-1 ring-slate-200 p-5 shadow-sm hover:shadow-md transition overflow-hidden">
+          <div class="h-0.5 w-full bg-rose-500/75"></div>
+          <div class="pt-4">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-semibold text-slate-500">En retard</p>
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 ring-1 ring-rose-200">⚠️</span>
+            </div>
+            <div class="mt-3 flex items-end justify-between">
+              <p class="text-3xl font-semibold text-slate-900"><%= @overdue_invoices_count %></p>
+              <span class="text-xs font-semibold text-rose-700"><%= overdue_ratio %>%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div class="h-8"></div>
+
+      <!-- ================================================= -->
+      <!-- ACTIONS + TOP CLIENTS -->
+      <!-- ================================================= -->
+      <div class="grid gap-6 lg:grid-cols-2">
+        <!-- Actions (plus coloré + plus pro) -->
+        <div class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+          <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+
+          <div class="p-6">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold text-slate-900">Actions</p>
+              <span class="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 ring-1 ring-violet-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+                Rapide
+              </span>
+            </div>
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <%= link_to new_invoice_path,
+                class: "group rounded-2xl bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 ring-1 ring-slate-200 p-4 hover:shadow-sm transition" do %>
+                <p class="text-sm font-semibold text-slate-900">Créer une facture</p>
+                <p class="mt-1 text-xs text-slate-600">Générer du CA</p>
+                <div class="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-violet-700">
+                  Ouvrir <span class="transition group-hover:translate-x-0.5">→</span>
+                </div>
+              <% end %>
+
+              <%= link_to clients_path,
+                class: "group rounded-2xl bg-white ring-1 ring-slate-200 p-4 hover:bg-slate-50 transition" do %>
+                <p class="text-sm font-semibold text-slate-900">Ajouter un client</p>
+                <p class="mt-1 text-xs text-slate-600">Base clients</p>
+                <div class="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-violet-700">
+                  Ouvrir <span class="transition group-hover:translate-x-0.5">→</span>
+                </div>
+              <% end %>
+
+              <%= link_to invoices_path,
+                class: "group rounded-2xl bg-white ring-1 ring-slate-200 p-4 hover:bg-slate-50 transition" do %>
+                <p class="text-sm font-semibold text-slate-900">Voir les factures</p>
+                <p class="mt-1 text-xs text-slate-600">Suivi complet</p>
+                <div class="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-violet-700">
+                  Ouvrir <span class="transition group-hover:translate-x-0.5">→</span>
+                </div>
+              <% end %>
+
+              <%= link_to subscription_path,
+                class: "group rounded-2xl bg-white ring-1 ring-slate-200 p-4 hover:bg-slate-50 transition" do %>
+                <p class="text-sm font-semibold text-slate-900">Abonnement</p>
+                <p class="mt-1 text-xs text-slate-600">Gestion Stripe</p>
+                <div class="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-violet-700">
+                  Ouvrir <span class="transition group-hover:translate-x-0.5">→</span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top clients (seul bloc en bas) -->
+        <aside class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm">
+          <div class="p-6">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm font-semibold text-slate-900">Top clients</p>
+              <span class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-3 py-1 text-xs font-semibold text-violet-700 ring-1 ring-slate-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+                <%= top_clients.size %>
+              </span>
+            </div>
+
+            <div class="mt-4 space-y-3">
+              <% if top_clients.any? %>
+                <% top_clients.each do |client| %>
+                  <% invoices_count = client.try(:invoices_count) || client.invoices.count %>
+                  <% total_cents    = (client.try(:total_cents_sum) || client.invoices.sum(:total_cents)).to_i %>
+                  <% share = top_clients_total_cents > 0 ? ((total_cents.to_f / top_clients_total_cents) * 100).round : 0 %>
+
+                  <div class="rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-sm transition">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-11 w-11 items-center justify-center rounded-2xl text-white text-sm font-semibold shadow-sm ring-1 ring-slate-200
+                                  bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                        <%= (client.name || "CL").first(2).upcase %>
+                      </div>
+
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between gap-3">
+                          <p class="truncate text-sm font-semibold text-slate-900"><%= client.name.presence || "Client ##{client.id}" %></p>
+                          <p class="text-xs font-semibold text-slate-900">
+                            <%= number_to_currency(total_cents.to_f / 100.0, unit: "€", separator: ",", delimiter: " ") %>
+                          </p>
+                        </div>
+
+                        <p class="mt-0.5 text-xs text-slate-600"><%= invoices_count %> · <%= share %>%</p>
+
+                        <div class="mt-2 h-2 w-full rounded-full bg-slate-100 ring-1 ring-slate-200 overflow-hidden">
+                          <div class="h-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500" style="width:<%= share %>%"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-3 text-right">
+                      <%= link_to "Voir →", client_path(client), class: "text-sm font-semibold text-violet-700 hover:text-fuchsia-600" %>
+                    </div>
+                  </div>
+                <% end %>
+              <% else %>
+                <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
+                  <p class="text-sm font-semibold text-slate-900">Aucun client</p>
+                  <p class="mt-1 text-xs text-slate-600">Ajoute un client.</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- Chart.js : premium, visible -->
+<script>
+  function renderRevenueChart() {
+    const canvas = document.getElementById("revenue-chart");
+    if (!canvas) return;
+    if (typeof Chart === "undefined") return;
+
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width < 50 || rect.height < 50) {
+      requestAnimationFrame(renderRevenueChart);
+      return;
+    }
+
+    try {
+      const existing = Chart.getChart ? Chart.getChart(canvas) : null;
+      if (existing) existing.destroy();
+    } catch(e) {}
+
+    const labels = JSON.parse(canvas.dataset.labels || "[]");
+    const valuesCents = JSON.parse(canvas.dataset.values || "[]");
+    const dataEuros = valuesCents.map(v => v / 100.0);
+
+    const ctx = canvas.getContext("2d");
+
+    const area = ctx.createLinearGradient(0, 0, 0, rect.height);
+    area.addColorStop(0, "rgba(124,58,237,0.22)");
+    area.addColorStop(0.60, "rgba(124,58,237,0.08)");
+    area.addColorStop(1, "rgba(124,58,237,0.00)");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          data: dataEuros,
+          tension: 0.38,
+          borderWidth: 3,
+          borderColor: "rgba(124,58,237,0.95)",
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointHitRadius: 18,
+          pointBorderWidth: 2,
+          pointBackgroundColor: "rgba(255,255,255,0.98)",
+          pointBorderColor: "rgba(124,58,237,0.95)",
+          fill: true,
+          backgroundColor: area
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(2,6,23,0.92)",
+            titleColor: "rgba(255,255,255,0.95)",
+            bodyColor: "rgba(255,255,255,0.92)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.12)",
+            displayColors: false,
+            padding: 10,
+            callbacks: {
+              label: function(c) {
+                const v = c.parsed.y || 0;
+                return " " + v.toLocaleString("fr-FR") + " €";
+              }
+            }
+          }
+        },
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: {
+            ticks: { color: "rgba(71,85,105,0.85)", font: { size: 11, weight: "600" } },
+            grid: { color: "rgba(148,163,184,0.14)" }
+          },
+          y: {
+            ticks: {
+              color: "rgba(71,85,105,0.85)",
+              font: { size: 11, weight: "600" },
+              callback: function(value) { return value.toLocaleString("fr-FR") + " €"; }
+            },
+            grid: { color: "rgba(148,163,184,0.14)" }
+          }
+        }
+      }
+    });
+  }
+
+  document.addEventListener("turbo:load", renderRevenueChart);
+  document.addEventListener("DOMContentLoaded", renderRevenueChart);
+  window.addEventListener("resize", () => requestAnimationFrame(renderRevenueChart));
+</script>

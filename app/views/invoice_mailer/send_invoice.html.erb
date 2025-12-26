@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <body style="margin:0; padding:0; font-family: Arial, sans-serif; background:#f5f6fa;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <!-- CARD -->
+          <table width="600" cellpadding="0" cellspacing="0"
+                 style="background:white; border-radius:14px; padding:30px; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+
+            <!-- LOGO -->
+            <tr>
+              <td style="text-align:center; padding-bottom:20px;">
+                <div style="
+                  background:#4F46E5;
+                  width:60px;
+                  height:60px;
+                  border-radius:12px;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  margin:0 auto;
+                  font-weight:bold;
+                  font-size:22px;
+                  color:white;">
+                  M2
+                </div>
+              </td>
+            </tr>
+
+            <!-- TITRE -->
+            <tr>
+              <td style="font-size:22px; font-weight:700; color:#111827; text-align:center; padding-bottom:10px;">
+                Votre facture <%= @invoice.number || @invoice.id %> est disponible
+              </td>
+            </tr>
+
+            <!-- TEXTE INTRO -->
+            <tr>
+              <td style="font-size:15px; color:#374151; line-height:1.6; padding-bottom:25px;">
+                Bonjour <%= @client.name %>,<br><br>
+                Vous trouverez ci-joint votre facture émise par
+                <strong><%= @company.name %></strong>.
+              </td>
+            </tr>
+
+            <!-- DÉTAILS FACTURE -->
+            <tr>
+              <td style="
+                background:#f9fafb;
+                border-radius:10px;
+                padding:18px;
+                font-size:14px;
+                color:#374151;
+                border:1px solid #e5e7eb;
+                margin-bottom:20px;">
+
+                <strong>Montant :</strong>
+                <%= number_to_currency(@invoice.total_cents.to_f / 100,
+                                       unit: "€", separator: ",", delimiter: " ") %><br>
+
+                <% if @invoice.issue_date.present? %>
+                  <strong>Émise le :</strong> <%= @invoice.issue_date.strftime("%d/%m/%Y") %><br>
+                <% end %>
+
+                <% if @invoice.due_date.present? %>
+                  <strong>Échéance :</strong> <%= @invoice.due_date.strftime("%d/%m/%Y") %><br>
+                <% end %>
+
+                <% if @invoice.status.present? %>
+                  <strong>Statut :</strong> <%= @invoice.status == "paid" ? "Payée" : (@invoice.status == "pending" ? "En attente" : @invoice.status) %>
+                <% end %>
+              </td>
+            </tr>
+
+            <!-- BOUTON VOIR LA FACTURE EN LIGNE -->
+            <tr>
+              <td style="text-align:center; padding:10px 0 30px;">
+                <a href="<%= invoice_url(@invoice) %>"
+                  style="
+                    background:#4F46E5;
+                    color:white;
+                    padding:14px 26px;
+                    font-size:15px;
+                    font-weight:600;
+                    border-radius:10px;
+                    text-decoration:none;
+                    display:inline-block;"
+                  target="_blank">
+                  Voir la facture en ligne
+                </a>
+              </td>
+            </tr>
+
+            <!-- INFO PIÈCE JOINTE -->
+            <tr>
+              <td style="font-size:13px; color:#6b7280; line-height:1.6; padding-bottom:10px;">
+                La facture est également jointe à cet email au format PDF.
+              </td>
+            </tr>
+
+            <!-- REMERCIEMENT -->
+            <tr>
+              <td style="font-size:13px; color:#6b7280; line-height:1.6; padding-bottom:10px;">
+                Merci pour votre confiance.<br>
+                Si vous avez la moindre question, n’hésitez pas à répondre à cet email.
+              </td>
+            </tr>
+
+            <!-- FOOTER -->
+            <tr>
+              <td style="text-align:center; padding-top:30px; font-size:12px; color:#9ca3af;">
+                — Mes2Vis • Plateforme de gestion de devis et factures —
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>

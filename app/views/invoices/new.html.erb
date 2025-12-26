@@ -1,0 +1,342 @@
+<%# === HEADER HAUT : FIL D’ARIANE + TITRE === %>
+<div class="mx-auto max-w-7xl mb-6 space-y-4">
+
+  <!-- Fil d’Ariane -->
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div class="text-[11px] text-slate-500">
+      <%= link_to "Factures", invoices_path, class: "font-semibold text-violet-700 hover:text-fuchsia-600" %>
+      <span class="mx-1">/</span>
+      <span class="font-semibold text-slate-700">Nouvelle facture</span>
+    </div>
+
+    <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+      <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+      Création
+    </span>
+  </div>
+
+  <!-- Carte titre -->
+  <section class="rounded-[32px] bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.10)] overflow-hidden">
+    <div class="p-6 md:p-8">
+      <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-700 ring-1 ring-slate-200">
+              <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+              Facture
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+              Formulaire
+            </span>
+          </div>
+
+          <h1 class="mt-4 text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+            Nouvelle facture
+          </h1>
+          <p class="mt-1 text-sm text-slate-600">
+            Renseigne le client, les infos facture, puis ajoute les lignes.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <%= link_to invoices_path,
+              class: "inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" do %>
+            <span class="text-base leading-none">←</span>
+            <span>Liste</span>
+          <% end %>
+
+          <span class="hidden md:inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-4 py-2 text-sm font-semibold text-violet-700 ring-1 ring-slate-200">
+            <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+            Totaux auto
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<%= form_with model: @invoice, url: invoices_path, local: true, class: "mx-auto max-w-7xl space-y-6 pb-12" do |f| %>
+
+  <%# === BLOC 1 : INFORMATIONS CLIENT === %>
+  <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden"
+           data-controller="client-preview"
+           data-client-preview-clients-value='<%= @clients.map { |c|
+             {
+               id:       c.id,
+               name:     c.name,
+               email:    c.email,
+               address:  (c.respond_to?(:address)  ? c.address  : nil),
+               zip_code: (c.respond_to?(:zip_code) ? c.zip_code : nil),
+               city:     (c.respond_to?(:city)     ? c.city     : nil),
+               phone:    (c.respond_to?(:phone)    ? c.phone    : nil)
+             }
+           }.to_json %>'>
+
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4">
+      <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+        <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+        Client
+      </h2>
+      <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+        <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+        Requis
+      </span>
+    </div>
+
+    <div class="grid gap-6 px-6 py-6 md:grid-cols-2">
+      <div>
+        <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          Client
+        </label>
+
+        <%= f.collection_select :client_id,
+                                @clients, :id, :name,
+                                { prompt: "Sélectionner un client" },
+                                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500",
+                                data: { client_preview_target: "select", action: "change->client-preview#change" } %>
+
+        <p class="mt-2 text-[11px] text-slate-500">
+          Tu peux gérer les fiches dans <span class="font-semibold text-slate-700">Clients</span>.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4"
+           data-client-preview-target="details">
+        <p class="text-[11px] text-slate-500">
+          Sélectionne un client pour afficher email / adresse / téléphone ici.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <%# === BLOC 2 : INFORMATIONS FACTURE === %>
+  <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4">
+      <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+        <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+        Facture
+      </h2>
+      <span class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-3 py-1 text-[11px] font-semibold text-violet-700 ring-1 ring-slate-200">
+        <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+        Numéro auto si vide
+      </span>
+    </div>
+
+    <div class="grid gap-6 px-6 py-6 md:grid-cols-2">
+      <div class="space-y-4">
+        <div>
+          <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Numéro</label>
+          <%= f.text_field :number,
+                placeholder: "Laisser vide pour générer automatiquement",
+                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Statut</label>
+          <%= f.select :status,
+                [["En attente", "pending"], ["Payée", "paid"], ["En retard", "overdue"]],
+                { prompt: "Choisir" },
+                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Émise le</label>
+            <%= f.date_field :issue_date,
+                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Échéance</label>
+            <%= f.date_field :due_date,
+                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Conditions</label>
+          <%= f.text_field :notes,
+                placeholder: "Ex : Paiement à 30 jours, virement bancaire…",
+                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# === BLOC 3 : LIGNES DE FACTURE === %>
+  <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden"
+           data-controller="invoice-items">
+
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4">
+      <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+        <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+        Lignes
+      </h2>
+
+      <button type="button"
+        data-action="click->invoice-items#add"
+        class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition active:scale-[0.99]
+               bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110">
+        <span class="text-base leading-none">＋</span>
+        <span>Ajouter</span>
+      </button>
+    </div>
+
+    <div class="grid gap-6 px-6 py-6 md:grid-cols-[2fr_1fr]">
+
+      <!-- Tableau -->
+      <div class="rounded-2xl border border-slate-200 overflow-hidden bg-white">
+        <table class="min-w-full text-left text-xs">
+          <thead class="bg-slate-100 text-slate-600">
+            <tr>
+              <th class="px-3 py-2 font-semibold">Description</th>
+              <th class="px-3 py-2 font-semibold">Qté</th>
+              <th class="px-3 py-2 font-semibold">PU (€)</th>
+              <th class="px-3 py-2 font-semibold">TVA (%)</th>
+              <th class="px-3 py-2 text-right"></th>
+            </tr>
+          </thead>
+
+          <tbody class="text-slate-900" data-invoice-items-target="container">
+            <%= f.fields_for :invoice_items do |item_form| %>
+              <tr class="border-t border-slate-200 hover:bg-slate-50">
+                <td class="px-3 py-2">
+                  <%= item_form.text_field :description,
+                        placeholder: "Service, abonnement…",
+                        class: "w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs
+                                focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                </td>
+
+                <td class="px-3 py-2">
+                  <%= item_form.number_field :quantity,
+                        step: "0.01",
+                        class: "w-20 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-right
+                                focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                </td>
+
+                <td class="px-3 py-2">
+                  <%= item_form.text_field :unit_price_eur,
+                        placeholder: "1200,00",
+                        class: "w-24 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-right
+                                focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                </td>
+
+                <td class="px-3 py-2">
+                  <%= item_form.number_field :vat_rate,
+                        step: "0.01",
+                        class: "w-20 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-right
+                                focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                </td>
+
+                <td class="px-3 py-2 text-right">
+                  <%= item_form.hidden_field :_destroy %>
+                  <button type="button"
+                          data-action="click->invoice-items#remove"
+                          class="text-xs font-semibold text-rose-600 hover:text-rose-800">
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Aide / Totaux -->
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-slate-900">Totaux</p>
+            <p class="mt-1 text-xs text-slate-600">
+              Calcul automatique à l’enregistrement.
+            </p>
+          </div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+            Auto
+          </span>
+        </div>
+
+        <div class="mt-4 space-y-2 text-[11px] text-slate-600">
+          <p>• Quantités décimales possibles (ex : 1,5).</p>
+          <p>• TVA à 0 si non applicable.</p>
+          <p>• Modifiable après création.</p>
+        </div>
+
+        <div class="mt-5 rounded-2xl bg-white ring-1 ring-slate-200 p-4">
+          <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Astuce</p>
+          <p class="mt-1 text-xs text-slate-700">
+            Utilise une description courte et claire (ex : “Abonnement mensuel”).
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TEMPLATE pour nouvelle ligne -->
+    <template data-invoice-items-target="template">
+      <tr class="border-t border-slate-200 hover:bg-slate-50"
+          data-invoice-items-target="item"
+          data-new-record="true">
+        <td class="px-3 py-2">
+          <input type="text"
+                 name="invoice[invoice_items_attributes][NEW_RECORD][description]"
+                 class="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                 placeholder="Service, abonnement…" />
+        </td>
+        <td class="px-3 py-2">
+          <input type="number" step="0.01"
+                 name="invoice[invoice_items_attributes][NEW_RECORD][quantity]"
+                 class="w-20 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-right
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                 placeholder="1.0" />
+        </td>
+        <td class="px-3 py-2">
+          <input type="text"
+                 name="invoice[invoice_items_attributes][NEW_RECORD][unit_price_eur]"
+                 class="w-24 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-right
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                 placeholder="1200,00" />
+        </td>
+        <td class="px-3 py-2">
+          <input type="number" step="0.01"
+                 name="invoice[invoice_items_attributes][NEW_RECORD][vat_rate]"
+                 class="w-20 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-right
+                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                 placeholder="20" />
+        </td>
+        <td class="px-3 py-2 text-right">
+          <input type="hidden"
+                 name="invoice[invoice_items_attributes][NEW_RECORD][_destroy]"
+                 value="false" />
+          <button type="button"
+                  data-action="click->invoice-items#remove"
+                  class="text-xs font-semibold text-rose-600 hover:text-rose-800">
+            Supprimer
+          </button>
+        </td>
+      </tr>
+    </template>
+
+  </section>
+
+  <%# === BOUTONS BAS === %>
+  <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+    <%= link_to "Annuler",
+                invoices_path,
+                class: "inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200/60 transition" %>
+
+    <%= f.submit "Créer la facture",
+                class: "inline-flex items-center justify-center rounded-2xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm cursor-pointer
+                        bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500 hover:brightness-110 transition active:scale-[0.99]" %>
+  </div>
+
+<% end %>

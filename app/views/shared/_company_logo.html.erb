@@ -1,0 +1,13 @@
+<% company ||= @company || current_user&.company %>
+
+<% if company&.logo&.attached? %>
+  <div class="h-10 w-10 overflow-hidden rounded-lg bg-slate-50 ring-1 ring-slate-200">
+    <%= image_tag company.logo.variant(resize_to_limit: [160, 160]),
+                  alt: company.name,
+                  class: "h-full w-full object-contain" %>
+  </div>
+<% else %>
+  <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white text-sm font-semibold">
+    <%= (company&.name || "m2").to_s.first(2).upcase %>
+  </div>
+<% end %>

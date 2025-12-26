@@ -1,0 +1,159 @@
+<div class="flex min-h-[95vh] items-center justify-center px-4 py-10">
+  <div class="w-full max-w-7xl">
+    <!-- Carte centrale -->
+    <div class="overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-slate-200 grid md:grid-cols-[1fr_1fr] min-h-[75vh]">
+
+      <!-- ================= PANEL GAUCHE ================= -->
+      <div class="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-fuchsia-500 text-white px-10 py-14 flex flex-col justify-between">
+
+        <!-- Haut -->
+        <div class="space-y-10">
+
+          <!-- Badge -->
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[12px] font-medium backdrop-blur-sm shadow-sm">
+              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>Espace sécurisé mes2vis</span>
+            </div>
+          </div>
+
+          <!-- Logo + nom -->
+          <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-xl font-semibold text-indigo-700 shadow">
+              m2
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-indigo-100 tracking-wide">mes2vis</p>
+              <p class="text-xs text-indigo-100/80">Votre assistant facturation</p>
+            </div>
+          </div>
+
+          <!-- Titre large -->
+          <div class="space-y-4">
+            <h1 class="text-3xl font-semibold tracking-tight leading-tight">
+              Connecte-toi pour gérer tes factures, clients et paiements
+            </h1>
+            <p class="text-sm text-indigo-100/90 leading-relaxed max-w-md">
+              Une interface claire, rapide et moderne pour suivre ton activité,
+              créer tes factures et automatiser tes relances.
+            </p>
+          </div>
+
+          <!-- Points clés -->
+          <div class="space-y-3 text-sm text-indigo-100/90">
+            <div class="flex items-start gap-3">
+              <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
+              <p>Création ultra-rapide de factures professionnelles.</p>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
+              <p>Gestion claire des paiements : payées, en attente, en retard.</p>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
+              <p>Un design épuré pensé pour aller vite sans se perdre.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bas -->
+        <p class="mt-10 text-[11px] text-indigo-100/60">
+          © <%= Time.current.year %> mes2vis — Tous droits réservés
+        </p>
+      </div>
+
+      <!-- ================= PANEL DROIT (FORM) ================= -->
+      <div class="relative px-14 py-14 bg-white flex flex-col justify-start">
+
+        <!-- Nouveau logo violet/blanc placé au-dessus de “Connexion” -->
+        <div class="mb-6 flex justify-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-fuchsia-500 text-lg font-semibold text-white shadow">
+            m2
+          </div>
+        </div>
+
+        <!-- Titre Connexion + sous-texte -->
+        <div class="mb-10 text-center">
+          <p class="text-2xl font-bold tracking-tight text-slate-900">
+            Connexion
+          </p>
+
+          <p class="mt-2 text-sm text-slate-500 max-w-sm mx-auto">
+            Entre tes informations pour accéder à ton espace professionnel.
+          </p>
+        </div>
+
+        <!-- Erreurs Devise -->
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+
+          <!-- Email -->
+          <div class="mb-6">
+            <%= f.label :email, "Adresse email",
+                class: "block text-xs font-medium uppercase tracking-wide text-slate-600" %>
+
+            <div class="mt-2 relative">
+              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">📧</span>
+              <%= f.email_field :email,
+                    autofocus: true,
+                    autocomplete: "email",
+                    placeholder: "toi@exemple.com",
+                    class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between">
+              <%= f.label :password, "Mot de passe",
+                  class: "block text-xs font-medium uppercase tracking-wide text-slate-600" %>
+
+              <% if devise_mapping.recoverable? %>
+                <%= link_to "Mot de passe oublié ?",
+                    new_password_path(resource_name),
+                    class: "text-xs font-medium text-indigo-600 hover:text-indigo-700" %>
+              <% end %>
+            </div>
+
+            <div class="mt-2 relative">
+              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
+              <%= f.password_field :password,
+                    autocomplete: "current-password",
+                    class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+            </div>
+          </div>
+
+          <% if devise_mapping.rememberable? %>
+            <div class="mb-6">
+              <label class="inline-flex items-center gap-2 text-xs text-slate-600">
+                <%= f.check_box :remember_me,
+                    class: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+                <span>Se souvenir de moi</span>
+              </label>
+            </div>
+          <% end %>
+
+          <!-- Bouton connexion -->
+          <div class="mt-2">
+            <%= f.submit "Se connecter",
+                class: "w-full cursor-pointer rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition" %>
+          </div>
+        <% end %>
+
+        <!-- Lien inscription -->
+        <% if devise_mapping.registerable? %>
+          <p class="mt-6 text-center text-xs text-slate-500">
+            Pas encore de compte ?
+            <%= link_to "Créer un compte",
+                new_registration_path(resource_name),
+                class: "font-medium text-indigo-600 hover:text-indigo-700" %>
+          </p>
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+</div>
