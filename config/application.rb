@@ -1,6 +1,10 @@
 require_relative "boot"
-require "dotenv"
-Dotenv.load
+begin
+  require "dotenv/load"
+rescue LoadError
+  # dotenv n'est pas installé en production (normal)
+end
+
 
 require "rails/all"
 
