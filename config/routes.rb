@@ -5,15 +5,14 @@ Rails.application.routes.draw do
   }
 
   # Root selon connexion
-  authenticated :user do
-    root "dashboard#index", as: :authenticated_root
-  end
+authenticated :user do
+  root "dashboard#index", as: :authenticated_root
+end
 
-  devise_scope :user do
-    unauthenticated do
-      root "devise/sessions#new", as: :unauthenticated_root
-    end
-  end
+unauthenticated do
+  root "pages#home", as: :unauthenticated_root
+end
+
 
   # 🔔 Abonnement / Stripe
   get "/abonnement", to: "subscriptions#show", as: :abonnement
