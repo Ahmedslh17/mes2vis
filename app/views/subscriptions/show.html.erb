@@ -1,16 +1,26 @@
 <div data-turbo="false" class="mx-auto max-w-7xl space-y-6 pb-12">
 
-  <!-- FLASH MESSAGES -->
-  <% if flash[:notice] %>
-    <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-sm">
-      <%= flash[:notice] %>
-    </div>
-  <% end %>
+  <!-- FLASH MESSAGES (anti doublon) -->
+  <% notice = flash[:notice].presence %>
+  <% alert  = flash[:alert].presence %>
 
-  <% if flash[:alert] %>
-    <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800 shadow-sm">
-      <%= flash[:alert] %>
+  <% if notice || alert %>
+    <div class="space-y-3">
+      <% if notice %>
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-sm">
+          <%= notice %>
+        </div>
+      <% end %>
+
+      <% if alert %>
+        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800 shadow-sm">
+          <%= alert %>
+        </div>
+      <% end %>
     </div>
+
+    <%# Empêche la ré-affichage du flash (souvent cause des doublons) %>
+    <% flash.discard %>
   <% end %>
 
   <!-- ================================================= -->

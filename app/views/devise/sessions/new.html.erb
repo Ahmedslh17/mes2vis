@@ -1,3 +1,4 @@
+<!-- app/views/devise/sessions/new.html.erb -->
 <div class="flex min-h-[95vh] items-center justify-center px-4 py-10">
   <div class="w-full max-w-7xl">
     <!-- Carte centrale -->
@@ -122,6 +123,7 @@
               <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
               <%= f.password_field :password,
                     autocomplete: "current-password",
+                    placeholder: "Ton mot de passe",
                     class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
             </div>
           </div>

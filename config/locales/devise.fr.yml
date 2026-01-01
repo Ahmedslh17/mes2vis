@@ -1,0 +1,59 @@
+fr:
+  errors:
+    messages:
+      not_saved:
+        one: "1 erreur a empêché l’enregistrement :"
+        other: "%{count} erreurs ont empêché l’enregistrement :"
+
+  devise:
+    failure:
+      already_authenticated: "Tu es déjà connecté."
+      invalid: "Email ou mot de passe incorrect."
+      not_found_in_database: "Email ou mot de passe incorrect."
+      unauthenticated: "Tu dois te connecter pour continuer."
+      unconfirmed: "Tu dois confirmer ton email avant de continuer."
+      inactive: "Ton compte n’est pas encore activé."
+      locked: "Ton compte est verrouillé."
+      timeout: "Ta session a expiré, reconnecte-toi."
+    sessions:
+      signed_in: "Connexion réussie ✅"
+      signed_out: "Déconnexion réussie."
+    registrations:
+      signed_up: "Compte créé ✅ Vérifie tes emails pour confirmer ton compte."
+      updated: "Compte mis à jour."
+      destroyed: "Ton compte a bien été supprimé."
+    confirmations:
+      confirmed: "Ton compte a bien été confirmé ✅"
+      send_instructions: "Tu vas recevoir un email de confirmation."
+      send_paranoid_instructions: "Si ton email existe, tu recevras un lien de confirmation."
+    passwords:
+      send_instructions: "Tu vas recevoir un email pour réinitialiser ton mot de passe."
+      updated: "Ton mot de passe a été mis à jour ✅"
+      updated_not_active: "Ton mot de passe a été mis à jour ✅"
+    mailer:
+      confirmation_instructions:
+        subject: "Confirme ton compte mes2vis"
+      reset_password_instructions:
+        subject: "Réinitialisation du mot de passe mes2vis"
+      unlock_instructions:
+        subject: "Déverrouillage de ton compte mes2vis"
+
+  activerecord:
+    attributes:
+      user:
+        email: "Email"
+        password: "Mot de passe"
+        password_confirmation: "Confirmation du mot de passe"
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              blank: "ne peut pas être vide"
+              taken: "est déjà utilisé"
+              invalid: "n’est pas valide"
+            password:
+              blank: "ne peut pas être vide"
+              too_short: "est trop court (minimum %{count} caractères)"
+            password_confirmation:
+              confirmation: "ne correspond pas au mot de passe"

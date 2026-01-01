@@ -1,29 +1,177 @@
-<h2>Sign up</h2>
+<!-- app/views/devise/registrations/new.html.erb -->
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
-  <%= render "users/shared/error_messages", resource: resource %>
+<div class="flex min-h-[95vh] items-center justify-center px-4 py-10">
+  <div class="w-full max-w-7xl">
+    <!-- Carte centrale -->
+    <div class="overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-slate-200 grid md:grid-cols-[1fr_1fr] min-h-[75vh]">
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+      <!-- ================= PANEL GAUCHE ================= -->
+      <div class="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-fuchsia-500 text-white px-10 py-14 flex flex-col justify-between">
+
+        <div class="space-y-10">
+          <!-- Badge -->
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[12px] font-medium backdrop-blur-sm shadow-sm">
+              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span>Créer un compte mes2vis</span>
+            </div>
+          </div>
+
+          <!-- Logo + nom -->
+          <div class="flex items-center gap-3">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-xl font-semibold text-indigo-700 shadow">
+              m2
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-indigo-100 tracking-wide">mes2vis</p>
+              <p class="text-xs text-indigo-100/80">Votre assistant facturation</p>
+            </div>
+          </div>
+
+          <!-- Titre -->
+          <div class="space-y-4">
+            <h1 class="text-3xl font-semibold tracking-tight leading-tight">
+              Inscris-toi et commence à créer tes factures en quelques secondes
+            </h1>
+            <p class="text-sm text-indigo-100/90 leading-relaxed max-w-md">
+              Une plateforme moderne, simple et puissante pour gérer tes clients,
+              tes paiements et automatiser ta comptabilité.
+            </p>
+          </div>
+
+          <!-- Points clés -->
+          <div class="space-y-3 text-sm text-indigo-100/90">
+            <div class="flex items-start gap-3">
+              <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
+              <p>Création de facture intuitive et personnalisée.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
+              <p>Gestion complète des statuts : payée, en attente, en retard.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
+              <p>Interface premium pensée pour les professionnels.</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-10 text-[11px] text-indigo-100/60">
+          © <%= Time.current.year %> mes2vis — Tous droits réservés
+        </p>
+      </div>
+
+      <!-- ================= PANEL DROIT (FORM) ================= -->
+      <div class="relative px-14 py-14 bg-white flex flex-col justify-start">
+
+        <!-- Logo -->
+        <div class="mb-6 flex justify-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500 text-lg font-semibold text-white shadow">
+            m2
+          </div>
+        </div>
+
+        <!-- Titre -->
+        <div class="mb-10 text-center">
+          <p class="text-2xl font-bold tracking-tight text-slate-900">
+            Créer un compte
+          </p>
+          <p class="mt-2 text-sm text-slate-500 max-w-sm mx-auto">
+            Configure ton espace professionnel mes2vis en moins d’une minute.
+          </p>
+        </div>
+
+        <!-- Erreurs Devise -->
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <!-- Form + Stimulus -->
+        <div data-controller="password">
+          <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+
+            <!-- EMAIL -->
+            <div class="mb-6">
+              <%= f.label :email, "Adresse email",
+                    class: "block text-xs font-semibold uppercase tracking-wide text-slate-600" %>
+
+              <div class="mt-2 relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">📧</span>
+                <%= f.email_field :email,
+                      autofocus: true,
+                      autocomplete: "email",
+                      placeholder: "toi@exemple.com",
+                      class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm text-slate-900 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+              </div>
+            </div>
+
+            <!-- MOT DE PASSE -->
+            <div class="mb-5">
+              <div class="flex items-center justify-between">
+                <%= f.label :password, "Mot de passe",
+                      class: "block text-xs font-semibold uppercase tracking-wide text-slate-600" %>
+
+                <% if @minimum_password_length %>
+                  <span class="text-[11px] text-slate-400">
+                    <%= @minimum_password_length %> caractères minimum
+                  </span>
+                <% end %>
+              </div>
+
+              <div class="mt-2 relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
+                <%= f.password_field :password,
+                      autocomplete: "new-password",
+                      placeholder: "Mot de passe sécurisé",
+                      data: { password_target: "password", action: "input->password#validate" },
+                      class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm text-slate-900 caret-slate-900 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+              </div>
+
+              <!-- RÈGLES (rouge tant que non OK, vert si OK) -->
+              <ul class="mt-3 space-y-1 text-sm">
+                <li data-password-target="ruleLength" class="text-red-600">• Au moins 8 caractères</li>
+                <li data-password-target="ruleUppercase" class="text-red-600">• Une majuscule</li>
+                <li data-password-target="ruleLowercase" class="text-red-600">• Une minuscule</li>
+                <li data-password-target="ruleNumber" class="text-red-600">• Un chiffre</li>
+                <li data-password-target="ruleSpecial" class="text-red-600">• Un caractère spécial</li>
+              </ul>
+            </div>
+
+            <!-- CONFIRMATION -->
+            <div class="mb-8">
+              <%= f.label :password_confirmation, "Confirmer le mot de passe",
+                    class: "block text-xs font-semibold uppercase tracking-wide text-slate-600" %>
+
+              <div class="mt-2 relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
+                <%= f.password_field :password_confirmation,
+                      autocomplete: "new-password",
+                      placeholder: "Confirmer le mot de passe",
+                      data: { password_target: "confirmation", action: "input->password#validate" },
+                      class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm text-slate-900 caret-slate-900 placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+              </div>
+
+              <p data-password-target="confirmMessage" class="mt-2 text-sm text-red-600 hidden">
+                Les mots de passe ne correspondent pas
+              </p>
+            </div>
+
+            <!-- SUBMIT -->
+            <%= f.submit "Créer mon compte",
+                  data: { password_target: "submit" },
+                  class: "w-full cursor-pointer rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition disabled:opacity-50",
+                  disabled: true %>
+
+          <% end %>
+        </div>
+
+        <!-- Lien connexion -->
+        <p class="mt-6 text-center text-xs text-slate-500">
+          Déjà un compte ?
+          <%= link_to "Se connecter",
+                new_session_path(resource_name),
+                class: "font-medium text-indigo-600 hover:text-indigo-700" %>
+        </p>
+      </div>
+
+    </div>
   </div>
-
-  <div class="field">
-    <%= f.label :password %>
-    <% if @minimum_password_length %>
-    <em>(<%= @minimum_password_length %> characters minimum)</em>
-    <% end %><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
-  </div>
-
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
-  </div>
-
-  <div class="actions">
-    <%= f.submit "Sign up" %>
-  </div>
-<% end %>
-
-<%= render "users/shared/links" %>
+</div>

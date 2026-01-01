@@ -1,3 +1,4 @@
+/* app/assets/stylesheets/application.css */
 /*
  * This is a manifest file that'll be compiled into application.css, which will include all the files
  * listed below.
@@ -13,3 +14,15 @@
  *= require_tree .
  *= require_self
  */
+
+/* ✅ Fix: points du password toujours visibles + texte bien noir */
+input[type="password"] {
+  -webkit-text-security: disc;
+  color: #0f172a !important; /* slate-900 */
+  caret-color: #0f172a !important;
+}
+
+/* ✅ Fix: évite un rendu trop clair selon certains navigateurs */
+input[type="password"]::placeholder {
+  color: rgba(15, 23, 42, 0.45);
+}

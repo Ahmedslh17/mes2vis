@@ -1,3 +1,6 @@
+<!-- =======================
+     REGISTRATION (devise) - new.html.erb
+     ======================= -->
 <div class="flex min-h-[95vh] items-center justify-center px-4 py-10">
   <div class="w-full max-w-7xl">
     <!-- Carte centrale -->
@@ -110,13 +113,15 @@
             <div class="flex items-center justify-between">
               <%= f.label :password, "Mot de passe",
                   class: "block text-xs font-medium uppercase tracking-wide text-slate-600" %>
-
-              <% if @minimum_password_length %>
-                <span class="text-[11px] text-slate-400">
-                  <%= @minimum_password_length %> caractères minimum
-                </span>
-              <% end %>
             </div>
+
+            <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
+              Le mot de passe doit contenir :
+              <br>• au moins 8 caractères
+              <br>• une majuscule et une minuscule
+              <br>• un chiffre
+              <br>• un caractère spécial (!@#$…)
+            </p>
 
             <div class="mt-2 relative">
               <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
