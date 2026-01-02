@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
+
     <%# ---- SEO / TITLE ---- %>
     <% default_title = "mes2vis – Facturation simple pour indépendants" %>
     <% default_description = "mes2vis vous aide à créer, envoyer et suivre vos factures et vos clients en quelques clics." %>
@@ -41,11 +42,10 @@
     <%= csp_meta_tag %>
 
     <%# ---- FAVICON / APP ICONS ---- %>
-    <%# 1) favicon svg (le plus propre) %>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" sizes="any" href="/favicon.ico">
+<link rel="shortcut icon" href="/favicon.ico">
 
-    <%# 2) fallback ico pour vieux navigateurs %>
-    <link rel="icon" sizes="any" href="/favicon.ico">
 
     <%# 3) icônes PWA / Android %>
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
