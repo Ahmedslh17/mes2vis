@@ -1,6 +1,27 @@
 <% @company ||= @invoice.company || current_user.company %>
 <% @client  ||= @invoice.client %>
 
+<% client_is_pro =
+  if @client.respond_to?(:professionnel?)
+    @client.professionnel?
+  else
+    @client.respond_to?(:client_type) && @client.client_type == "professionnel"
+  end
+%>
+
+<% client_siren_ok = !client_is_pro || @client.siren.present? %>
+
+<% efacture_category_label =
+  case @invoice.operation_category
+  when "goods"    then "Vente de biens"
+  when "services" then "Prestation de services"
+  when "mixed"    then "Mixte (biens + services)"
+  else nil
+  end
+%>
+
+<% efacture_ready = client_siren_ok %>
+
 <% total_eur    = @invoice.total_cents.to_i / 100.0 %>
 <% subtotal_eur = @invoice.subtotal_cents.to_i / 100.0 %>
 <% vat_eur      = @invoice.vat_amount_cents.to_i / 100.0 %>
@@ -25,6 +46,44 @@
   else "border-slate-200"
   end %>
 
+<%# --- PDP badge fallback (ne casse pas si méthodes absentes) --- %>
+<% pdp_label, pdp_style =
+  if @invoice.respond_to?(:pdp_badge)
+    @invoice.pdp_badge
+  else
+    # fallback simple basé sur pdp_status
+    case @invoice.try(:pdp_status)
+    when "draft"
+      ["PDP : Brouillon", "bg-slate-100 text-slate-700 ring-slate-200"]
+    when "ready"
+      ["PDP : Prête", "bg-emerald-50 text-emerald-700 ring-emerald-200"]
+    when "sent", "submitted"
+      ["PDP : Envoyée", "bg-indigo-50 text-indigo-700 ring-indigo-200"]
+    when "accepted"
+      ["PDP : Acceptée", "bg-emerald-50 text-emerald-700 ring-emerald-200"]
+    when "rejected"
+      ["PDP : Rejetée", "bg-rose-50 text-rose-700 ring-rose-200"]
+    when "error"
+      ["PDP : Erreur", "bg-rose-50 text-rose-700 ring-rose-200"]
+    else
+      ["PDP : —", "bg-slate-100 text-slate-700 ring-slate-200"]
+    end
+  end
+%>
+
+<% pdp_ready =
+  if @invoice.respond_to?(:ready_for_pdp?)
+    @invoice.ready_for_pdp?
+  else
+    # fallback : prêt si client pro => siren présent, sinon OK
+    client_siren_ok
+  end
+%>
+
+<% pdp_state = @invoice.try(:pdp_status).to_s %>
+<% pdp_sent = %w[submitted sent accepted rejected].include?(pdp_state) %>
+<% pdp_has_error = (pdp_state == "error") %>
+
 <div class="mx-auto max-w-7xl space-y-6 pb-14">
 
   <!-- ================================================= -->
@@ -34,9 +93,7 @@
     <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
 
     <div class="p-6 md:p-8">
-      <!-- Row 1: breadcrumb + title + actions -->
       <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2 text-[11px]">
             <%= link_to invoices_path,
@@ -60,6 +117,11 @@
               <span class="h-2 w-2 rounded-full <%= status_dot %>"></span>
               <%= status_label %>
             </span>
+
+            <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 <%= pdp_style %>">
+              <span class="h-2 w-2 rounded-full <%= pdp_ready ? 'bg-emerald-500' : 'bg-slate-400' %>"></span>
+              <%= pdp_label %>
+            </span>
           </div>
 
           <h1 class="mt-3 text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 truncate">
@@ -71,13 +133,40 @@
           </p>
         </div>
 
-        <!-- Actions + micro help -->
         <div class="flex flex-col items-start gap-2 lg:items-end">
           <div class="flex flex-wrap items-center gap-2 lg:justify-end">
             <%= link_to invoice_path(@invoice, format: :pdf),
                         target: "_blank",
                         class: "inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-violet-700 transition" do %>
               📄 PDF
+            <% end %>
+
+            <%# --- Bloc actions PDP --- %>
+            <% if pdp_sent %>
+              <span class="inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                ✅ Envoyée (e-facture)
+              </span>
+            <% elsif pdp_has_error %>
+              <span class="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 ring-1 ring-rose-200">
+                ⚠️ Erreur e-facture
+              </span>
+
+              <%= button_to pdp_submit_invoice_path(@invoice),
+                            method: :post,
+                            data: { turbo_confirm: "Réessayer l'envoi e-facture (mode test) ?" },
+                            form: { class: "inline-flex" },
+                            class: "inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-rose-700 transition" do %>
+                🔁 Réessayer
+              <% end %>
+            <% else %>
+              <%= button_to pdp_submit_invoice_path(@invoice),
+                            method: :post,
+                            data: { turbo_confirm: "Envoyer cette facture en e-facture (mode test) ?" },
+                            form: { class: "inline-flex" },
+                            disabled: !pdp_ready,
+                            class: "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-sm transition #{pdp_ready ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-slate-300 cursor-not-allowed'}" do %>
+                📤 Envoyer en e-facture
+              <% end %>
             <% end %>
 
             <%= link_to edit_invoice_path(@invoice),
@@ -104,14 +193,22 @@
             <% end %>
           </div>
 
-          <p class="text-[11px] text-slate-500">
-            Astuce : ouvre le PDF pour partager la facture avec le client.
-          </p>
+          <% if !pdp_ready && !pdp_sent %>
+            <p class="text-[11px] text-rose-600">
+              ⚠️ E-facture : complète les infos requises (client pro ⇒ SIREN, lignes, dates) avant envoi.
+            </p>
+          <% elsif pdp_has_error && @invoice.pdp_errors.present? %>
+            <p class="text-[11px] text-rose-600 max-w-[520px] text-right">
+              Détail : <%= @invoice.pdp_errors.to_s %>
+            </p>
+          <% else %>
+            <p class="text-[11px] text-slate-500">
+              Astuce : ouvre le PDF pour partager la facture avec le client.
+            </p>
+          <% end %>
         </div>
-
       </div>
 
-      <!-- Row 2: key dates -->
       <div class="mt-6 grid gap-3 sm:grid-cols-3">
         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">📅 Émise</p>
@@ -277,41 +374,183 @@
     <!-- RIGHT COLUMN -->
     <aside class="space-y-6">
 
-      <!-- SUMMARY -->
-      <section class="lg:sticky lg:top-24 rounded-2xl bg-white border border-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.06)] overflow-hidden">
+      <!-- SUMMARY (SANS STICKY / SANS MOUVEMENT, STYLE +) -->
+      <section class="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_35px_rgba(15,23,42,0.06)] overflow-hidden">
         <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+
         <div class="p-6">
-          <div class="flex items-center justify-between">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Récapitulatif</p>
-            <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border <%= status_outline %> <%= status_bg %> <%= status_text %>">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Récapitulatif</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">Totaux de la facture</p>
+              <p class="mt-1 text-[11px] text-slate-500">Montants calculés à partir des lignes.</p>
+            </div>
+
+            <span class="shrink-0 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border <%= status_outline %> <%= status_bg %> <%= status_text %>">
               <span class="h-2 w-2 rounded-full <%= status_dot %>"></span>
               <%= status_label %>
             </span>
           </div>
 
-          <dl class="mt-4 space-y-3 text-sm text-slate-700">
-            <div class="flex justify-between">
-              <dt class="text-slate-600">Sous-total HT</dt>
-              <dd class="font-semibold text-slate-900"><%= number_to_currency(subtotal_eur, unit: "€", separator: ",", delimiter: " ") %></dd>
+          <div class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <dl class="space-y-3 text-sm">
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-slate-600">Sous-total HT</dt>
+                <dd class="font-semibold text-slate-900 tabular-nums">
+                  <%= number_to_currency(subtotal_eur, unit: "€", separator: ",", delimiter: " ") %>
+                </dd>
+              </div>
+
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-slate-600">TVA</dt>
+                <dd class="font-semibold text-slate-900 tabular-nums">
+                  <%= number_to_currency(vat_eur, unit: "€", separator: ",", delimiter: " ") %>
+                </dd>
+              </div>
+
+              <div class="h-px bg-slate-200"></div>
+
+              <div class="flex items-end justify-between gap-4">
+                <dt class="text-base font-semibold text-slate-900">Total TTC</dt>
+                <dd class="text-2xl font-semibold tracking-tight text-violet-700 tabular-nums">
+                  <%= number_to_currency(total_eur, unit: "€", separator: ",", delimiter: " ") %>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Émise</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900">
+                <%= @invoice.issue_date&.strftime("%d %b %Y") || "—" %>
+              </p>
             </div>
 
-            <div class="flex justify-between">
-              <dt class="text-slate-600">TVA</dt>
-              <dd class="font-semibold text-slate-900"><%= number_to_currency(vat_eur, unit: "€", separator: ",", delimiter: " ") %></dd>
+            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Échéance</p>
+              <p class="mt-1 text-sm font-semibold <%= @invoice.status == 'overdue' ? 'text-rose-700' : 'text-slate-900' %>">
+                <%= @invoice.due_date&.strftime("%d %b %Y") || "—" %>
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[11px] text-slate-600">
+            ✅ Astuce : si tu modifies une ligne, les totaux se recalculent à l’enregistrement.
+          </div>
+        </div>
+      </section>
+
+      <!-- E-FACTURE (FR) -->
+      <section class="rounded-2xl bg-white border border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.06)] overflow-hidden">
+        <div class="h-1 w-full bg-gradient-to-r from-indigo-500 via-violet-600 to-fuchsia-500"></div>
+
+        <div class="p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">E-facture (France)</p>
+              <h3 class="mt-1 text-sm font-semibold text-slate-900">Contrôle rapide</h3>
+              <p class="mt-1 text-[11px] text-slate-600">
+                Objectif : être prêt pour la réforme (client pro = SIREN).
+              </p>
             </div>
 
-            <div class="h-px bg-slate-200"></div>
+            <% if efacture_ready %>
+              <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                OK
+              </span>
+            <% else %>
+              <span class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                À compléter
+              </span>
+            <% end %>
+          </div>
 
-            <div class="flex items-end justify-between">
-              <dt class="text-base font-semibold text-slate-900">Total TTC</dt>
-              <dd class="text-2xl font-semibold tracking-tight text-violet-700">
-                <%= number_to_currency(total_eur, unit: "€", separator: ",", delimiter: " ") %>
-              </dd>
+          <div class="mt-4 space-y-3 text-xs text-slate-700">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Client</p>
+
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <% if client_is_pro %>
+                  <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Professionnel
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    Particulier
+                  </span>
+                <% end %>
+
+                <% if client_siren_ok %>
+                  <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    SIREN OK
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-rose-200">
+                    <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                    SIREN manquant
+                  </span>
+                <% end %>
+              </div>
+
+              <% if client_is_pro %>
+                <p class="mt-2 text-[11px] text-slate-600">
+                  Pour un client professionnel, le SIREN (9 chiffres) est indispensable.
+                </p>
+
+                <% if @client.siren.present? %>
+                  <div class="mt-3 rounded-xl bg-white border border-slate-200 p-3">
+                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">SIREN</p>
+                    <p class="mt-1 text-sm font-semibold text-slate-900 tracking-wide"><%= @client.siren %></p>
+                  </div>
+                <% end %>
+              <% end %>
+
+              <% unless client_siren_ok %>
+                <div class="mt-3 rounded-xl bg-rose-50 border border-rose-200 p-3 text-rose-800">
+                  <p class="text-[11px] font-semibold">
+                    Action : ajoute le SIREN dans la fiche client.
+                  </p>
+                  <p class="mt-1 text-[11px] text-rose-700">
+                    Clients → ouvrir le client → renseigner “SIREN”.
+                  </p>
+                </div>
+              <% end %>
             </div>
-          </dl>
 
-          <div class="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-3 text-[11px] text-slate-600">
-            ✅ Montants calculés automatiquement à partir des lignes.
+            <div class="rounded-2xl bg-white border border-slate-200 p-4">
+              <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Données e-facture (optionnel)</p>
+
+              <div class="mt-3 space-y-3 text-[11px]">
+                <div class="flex items-start justify-between gap-3">
+                  <span class="text-slate-500">Catégorie d’opération</span>
+                  <span class="font-semibold text-slate-900"><%= efacture_category_label || "—" %></span>
+                </div>
+
+                <div class="h-px bg-slate-200"></div>
+
+                <div class="space-y-1">
+                  <p class="text-slate-500">Adresse de livraison / d’exécution</p>
+                  <p class="font-semibold text-slate-900 whitespace-pre-line"><%= @invoice.delivery_address.presence || "—" %></p>
+                </div>
+              </div>
+
+              <p class="mt-3 text-[11px] text-slate-500">
+                Tu peux remplir ces infos maintenant, même si c’est “optionnel” pour l’instant.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end">
+            <%= link_to edit_invoice_path(@invoice),
+                        class: "inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-slate-800 transition" do %>
+              ✏️ Modifier
+            <% end %>
           </div>
         </div>
       </section>

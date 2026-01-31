@@ -1,4 +1,28 @@
 <%# === HEADER HAUT : FIL D’ARIANE + TITRE === %>
+
+<%# === BLOC ERREURS GLOBAL (AU DESSUS DU HEADER) === %>
+<% if @invoice.errors.any? %>
+  <div class="mx-auto max-w-7xl mb-6">
+    <div class="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-5 text-rose-800 ring-1 ring-rose-100">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 h-2.5 w-2.5 rounded-full bg-rose-500"></div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold">Veuillez compléter les champs obligatoires.</p>
+          <p class="mt-1 text-xs text-rose-700">
+            Corrige les champs ci-dessous puis réessaie.
+          </p>
+
+          <ul class="mt-3 list-disc pl-5 text-xs text-rose-800 space-y-1">
+            <% @invoice.errors.full_messages.uniq.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
 <div class="mx-auto max-w-7xl mb-6 space-y-4">
 
   <!-- Fil d’Ariane -->
@@ -57,6 +81,12 @@
 
 <%= form_with model: @invoice, url: invoices_path, local: true, class: "mx-auto max-w-7xl space-y-6 pb-12" do |f| %>
 
+  <%# Helpers classes (inline, sans casser ton style) %>
+  <% base_input = "mt-1 w-full rounded-2xl bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1" %>
+  <% ok_border  = "border border-slate-200 focus:border-violet-500 focus:ring-violet-500" %>
+  <% err_border = "border border-rose-300 focus:border-rose-400 focus:ring-rose-300" %>
+  <% err_text   = "mt-2 text-[11px] text-rose-600 font-semibold" %>
+
   <%# === BLOC 1 : INFORMATIONS CLIENT === %>
   <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden"
            data-controller="client-preview"
@@ -92,9 +122,12 @@
         <%= f.collection_select :client_id,
                                 @clients, :id, :name,
                                 { prompt: "Sélectionner un client" },
-                                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
-                                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500",
+                                class: "#{base_input} #{(@invoice.errors[:client_id].any? ? err_border : ok_border)}",
                                 data: { client_preview_target: "select", action: "change->client-preview#change" } %>
+
+        <% if @invoice.errors[:client_id].any? %>
+          <p class="<%= err_text %>"><%= @invoice.errors[:client_id].first %></p>
+        <% end %>
 
         <p class="mt-2 text-[11px] text-slate-500">
           Tu peux gérer les fiches dans <span class="font-semibold text-slate-700">Clients</span>.
@@ -129,8 +162,11 @@
           <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Numéro</label>
           <%= f.text_field :number,
                 placeholder: "Laisser vide pour générer automatiquement",
-                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
-                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                class: "#{base_input} #{(@invoice.errors[:number].any? ? err_border : ok_border)}" %>
+
+          <% if @invoice.errors[:number].any? %>
+            <p class="<%= err_text %>"><%= @invoice.errors[:number].first %></p>
+          <% end %>
         </div>
 
         <div>
@@ -138,8 +174,11 @@
           <%= f.select :status,
                 [["En attente", "pending"], ["Payée", "paid"], ["En retard", "overdue"]],
                 { prompt: "Choisir" },
-                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
-                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                class: "#{base_input} #{(@invoice.errors[:status].any? ? err_border : ok_border)}" %>
+
+          <% if @invoice.errors[:status].any? %>
+            <p class="<%= err_text %>"><%= @invoice.errors[:status].first %></p>
+          <% end %>
         </div>
       </div>
 
@@ -148,15 +187,21 @@
           <div>
             <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Émise le</label>
             <%= f.date_field :issue_date,
-                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
-                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                class: "#{base_input} #{(@invoice.errors[:issue_date].any? ? err_border : ok_border)}" %>
+
+            <% if @invoice.errors[:issue_date].any? %>
+              <p class="<%= err_text %>"><%= @invoice.errors[:issue_date].first %></p>
+            <% end %>
           </div>
 
           <div>
             <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Échéance</label>
             <%= f.date_field :due_date,
-                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
-                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                class: "#{base_input} #{(@invoice.errors[:due_date].any? ? err_border : ok_border)}" %>
+
+            <% if @invoice.errors[:due_date].any? %>
+              <p class="<%= err_text %>"><%= @invoice.errors[:due_date].first %></p>
+            <% end %>
           </div>
         </div>
 
@@ -164,9 +209,69 @@
           <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Conditions</label>
           <%= f.text_field :notes,
                 placeholder: "Ex : Paiement à 30 jours, virement bancaire…",
-                class: "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900
-                        focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500" %>
+                class: "#{base_input} #{(@invoice.errors[:notes].any? ? err_border : ok_border)}" %>
+
+          <% if @invoice.errors[:notes].any? %>
+            <p class="<%= err_text %>"><%= @invoice.errors[:notes].first %></p>
+          <% end %>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <%# === BLOC 2B : E-FACTURE (FR) === %>
+  <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-[0_18px_70px_rgba(15,23,42,0.08)] overflow-hidden">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4">
+      <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
+        <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+        E-facture (France)
+      </h2>
+      <span class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200">
+        Optionnel (pour l’instant)
+      </span>
+    </div>
+
+    <div class="grid gap-6 px-6 py-6 md:grid-cols-2">
+      <div>
+        <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          Catégorie d’opération
+        </label>
+
+        <%= f.select :operation_category,
+              [
+                ["Vente de biens", "goods"],
+                ["Prestation de services", "services"],
+                ["Mixte (biens + services)", "mixed"]
+              ],
+              { prompt: "Choisir une catégorie" },
+              class: "#{base_input} #{(@invoice.errors[:operation_category].any? ? err_border : ok_border)}" %>
+
+        <% if @invoice.errors[:operation_category].any? %>
+          <p class="<%= err_text %>"><%= @invoice.errors[:operation_category].first %></p>
+        <% end %>
+
+        <p class="mt-2 text-[11px] text-slate-500">
+          Exemple : pour du dev web = <span class="font-semibold text-slate-700">prestation de services</span>.
+        </p>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          Adresse de livraison / d’exécution
+        </label>
+
+        <%= f.text_area :delivery_address,
+              rows: 4,
+              placeholder: "Adresse où la prestation est réalisée (ou livraison). Laisse vide si pas applicable.",
+              class: "#{base_input} #{(@invoice.errors[:delivery_address].any? ? err_border : ok_border)} resize-none" %>
+
+        <% if @invoice.errors[:delivery_address].any? %>
+          <p class="<%= err_text %>"><%= @invoice.errors[:delivery_address].first %></p>
+        <% end %>
+
+        <p class="mt-2 text-[11px] text-slate-500">
+          Tu peux mettre l’adresse du client si c’est le lieu de la prestation.
+        </p>
       </div>
     </div>
   </section>
@@ -189,6 +294,15 @@
         <span>Ajouter</span>
       </button>
     </div>
+
+    <%# Erreurs liées aux lignes (si tu as des validations sur invoice_items) %>
+    <% if @invoice.errors[:invoice_items].any? %>
+      <div class="px-6 pt-5">
+        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800">
+          <p class="text-xs font-semibold"><%= @invoice.errors[:invoice_items].first %></p>
+        </div>
+      </div>
+    <% end %>
 
     <div class="grid gap-6 px-6 py-6 md:grid-cols-[2fr_1fr]">
 

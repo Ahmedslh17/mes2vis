@@ -1,3 +1,4 @@
+# app/controllers/invoices_controller.rb
 class InvoicesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_subscription_for_second_invoice!, only: [:new, :create, :duplicate]
@@ -10,7 +11,8 @@ class InvoicesController < ApplicationController
     :send_email,
     :update_status,
     :duplicate,
-    :send_reminder
+    :send_reminder,
+    :pdp_submit
   ]
 
   # === INDEX : liste + recherche + filtres ===
@@ -27,20 +29,16 @@ class InvoicesController < ApplicationController
     end
 
     # Filtre par statut
-    if params[:status].present?
-      scope = scope.where(status: params[:status])
-    end
+    scope = scope.where(status: params[:status]) if params[:status].present?
 
     # Filtre par client
-    if params[:client_id].present?
-      scope = scope.where(client_id: params[:client_id])
-    end
+    scope = scope.where(client_id: params[:client_id]) if params[:client_id].present?
 
     @invoices = scope.order(issue_date: :desc)
 
     # Pour garder les valeurs dans le formulaire
-    @query              = params[:query]
-    @status             = params[:status]
+    @query               = params[:query]
+    @status              = params[:status]
     @selected_client_id = params[:client_id]
   end
 
@@ -66,7 +64,6 @@ class InvoicesController < ApplicationController
 
   # === NEW ===
   def new
-    # client préselectionné éventuellement
     preselected_client_id = params.dig(:invoice, :client_id)
 
     @invoice = @company.invoices.new(
@@ -77,8 +74,6 @@ class InvoicesController < ApplicationController
     )
 
     @clients = @company.clients
-
-    # au moins une ligne vide
     @invoice.invoice_items.build
   end
 
@@ -94,7 +89,6 @@ class InvoicesController < ApplicationController
       redirect_to invoices_path, notice: "Facture créée avec succès."
     else
       @clients = @company.clients
-      flash.now[:alert] = "Erreur lors de la création de la facture."
       render :new, status: :unprocessable_entity
     end
   end
@@ -146,8 +140,6 @@ class InvoicesController < ApplicationController
 
   # === RAPPEL DE PAIEMENT ===
   def send_reminder
-    # @company et @invoice déjà chargés par les before_action
-
     if @invoice.client.email.blank?
       redirect_to invoice_path(@invoice),
                   alert: "Ce client n'a pas d'email. Ajoute un email sur sa fiche client."
@@ -188,9 +180,7 @@ class InvoicesController < ApplicationController
     @invoice = @company.invoices.find(params[:id])
 
     if @invoice.update(status: params[:status])
-      if @invoice.status == "paid" && @invoice.paid_at.blank?
-        @invoice.update(paid_at: Time.current)
-      end
+      @invoice.update(paid_at: Time.current) if @invoice.status == "paid" && @invoice.paid_at.blank?
       redirect_to invoice_path(@invoice), notice: "Statut mis à jour avec succès."
     else
       redirect_to invoice_path(@invoice), alert: "Erreur lors de la mise à jour du statut."
@@ -223,6 +213,57 @@ class InvoicesController < ApplicationController
     end
   end
 
+  # === E-FACTURE (PDP) : VIA SERVICE ===
+  def pdp_submit
+    # 0) Contrôle "prêt pour PDP"
+    if @invoice.respond_to?(:ready_for_pdp?) && !@invoice.ready_for_pdp?
+      redirect_to invoice_path(@invoice),
+                  alert: "❌ Facture pas prête pour e-facture : complète les infos (ex: SIREN client pro, lignes, dates)."
+      return
+    end
+
+    # 1) Empêcher le double envoi
+    if %w[submitted sent accepted].include?(@invoice.pdp_status)
+      redirect_to invoice_path(@invoice),
+                  notice: "✅ Facture déjà transmise à la PDP."
+      return
+    end
+
+    # 2) Appel service PDP
+    result = Pdp::SubmitInvoice.new(invoice: @invoice).call
+
+    if result.ok?
+      @invoice.update_columns(
+        pdp_status: "submitted",
+        pdp_external_id: result.external_id,
+        pdp_errors: nil,
+        updated_at: Time.current
+      )
+
+      redirect_to invoice_path(@invoice),
+                  notice: "✅ Facture envoyée en e-facture."
+    else
+      @invoice.update_columns(
+        pdp_status: "error",
+        pdp_errors: Array(result.errors).to_json,
+        updated_at: Time.current
+      )
+
+      redirect_to invoice_path(@invoice),
+                  alert: "❌ Erreur e-facture : #{Array(result.errors).join(', ')}"
+    end
+  rescue => e
+    # ⚠️ IMPORTANT: update/update! déclenche validations => ton before_validation peut écraser "error"
+    @invoice.update_columns(
+      pdp_status: "error",
+      pdp_errors: [e.message].to_json,
+      updated_at: Time.current
+    )
+
+    redirect_to invoice_path(@invoice),
+                alert: "❌ Erreur e-facture : #{e.message}"
+  end
+
   private
 
   def set_company
@@ -246,6 +287,8 @@ class InvoicesController < ApplicationController
       :payment_notes,
       :subtotal_cents,
       :vat_amount_cents,
+      :operation_category,
+      :delivery_address,
       invoice_items_attributes: [
         :id,
         :description,
@@ -260,9 +303,7 @@ class InvoicesController < ApplicationController
   end
 
   def ensure_paid_at_if_paid(invoice)
-    if invoice.status == "paid" && invoice.paid_at.blank?
-      invoice.paid_at = Time.current
-    end
+    invoice.paid_at = Time.current if invoice.status == "paid" && invoice.paid_at.blank?
   end
 
   def compute_totals_from_items(invoice)
@@ -270,8 +311,11 @@ class InvoicesController < ApplicationController
     vat_cents      = 0
 
     invoice.invoice_items.each do |item|
-      # Ligne complètement vide → on la supprime
-      if item.description.blank? && item.quantity.blank? && item.unit_price_cents.blank? && item.unit_price_eur.blank?
+      # Ligne vide → on supprime
+      if item.description.blank? &&
+         item.quantity.blank? &&
+         item.unit_price_cents.blank? &&
+         item.unit_price_eur.blank?
         item.mark_for_destruction
         next
       end
@@ -279,26 +323,17 @@ class InvoicesController < ApplicationController
       # Quantité (par défaut 1)
       qty = item.quantity.present? ? item.quantity.to_f : 1.0
 
-      # Prix unitaire : on passe par unit_price_eur si utilisé
-      if item.respond_to?(:unit_price_eur) && item.unit_price_cents.blank?
-        # le setter unit_price_eur a déjà rempli unit_price_cents
+      # PRIORITÉ au champ euros du formulaire
+      if item.respond_to?(:unit_price_eur) && item.unit_price_eur.present?
+        raw_price = item.unit_price_eur.to_s.tr(",", ".")
+        unit_price_cents = (raw_price.to_f * 100).round
+        item.unit_price_cents = unit_price_cents
+      else
+        unit_price_cents = item.unit_price_cents.to_i
       end
 
-      # Si pas passé par unit_price_eur, on normalise tout de même
-      raw_price =
-        if item.unit_price_cents.present?
-          item.unit_price_cents.to_s
-        else
-          "0"
-        end
-
-      raw_price = raw_price.to_s.tr(",", ".")
-      unit_price_eur   = raw_price.to_f
-      unit_price_cents = (unit_price_eur * 100).round
-      item.unit_price_cents ||= unit_price_cents
-
-      # Sous-total de la ligne
-      line_subtotal = (qty * item.unit_price_cents.to_i).round
+      # Sous-total ligne
+      line_subtotal = (qty * unit_price_cents).round
       item.line_total_cents = line_subtotal
 
       subtotal_cents += line_subtotal
@@ -308,7 +343,7 @@ class InvoicesController < ApplicationController
       vat_cents += (line_subtotal * rate / 100.0).round
     end
 
-    invoice.subtotal_cents   = subtotal_cents
+    invoice.subtotal_cents    = subtotal_cents
     invoice.vat_amount_cents = vat_cents
     invoice.total_cents      = subtotal_cents + vat_cents
   end

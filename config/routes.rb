@@ -5,14 +5,13 @@ Rails.application.routes.draw do
   }
 
   # Root selon connexion
-authenticated :user do
-  root "dashboard#index", as: :authenticated_root
-end
+  authenticated :user do
+    root "dashboard#index", as: :authenticated_root
+  end
 
-unauthenticated do
-  root "pages#home", as: :unauthenticated_root
-end
-
+  unauthenticated do
+    root "pages#home", as: :unauthenticated_root
+  end
 
   # 🔔 Abonnement / Stripe
   get "/abonnement", to: "subscriptions#show", as: :abonnement
@@ -29,6 +28,7 @@ end
       patch :update_status
       post  :send_email
       post  :send_reminder
+      post  :pdp_submit
     end
   end
 
@@ -50,6 +50,10 @@ end
   get "mentions-legales", to: "pages#legal",   as: :legal_mentions
   get "confidentialite",  to: "pages#privacy", as: :privacy
   get "support",          to: "pages#support", as: :support
+
+  # ✅ Webhook PDP (réception statuts)
+  # Pennylane te donnera l’URL à renseigner côté PDP.
+  post "/pdp/webhooks", to: "pdp/webhooks#create"
 
   # Healthcheck Rails
   get "up" => "rails/health#show", as: :rails_health_check

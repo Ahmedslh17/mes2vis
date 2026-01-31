@@ -15,21 +15,27 @@ fr:
       inactive: "Ton compte n’est pas encore activé."
       locked: "Ton compte est verrouillé."
       timeout: "Ta session a expiré, reconnecte-toi."
+
     sessions:
       signed_in: "Connexion réussie ✅"
       signed_out: "Déconnexion réussie."
+
     registrations:
       signed_up: "Compte créé ✅ Vérifie tes emails pour confirmer ton compte."
+      signed_up_but_unconfirmed: "Compte créé ✅ Va consulter tes e-mails pour confirmer ton inscription."
       updated: "Compte mis à jour."
       destroyed: "Ton compte a bien été supprimé."
+
     confirmations:
       confirmed: "Ton compte a bien été confirmé ✅"
       send_instructions: "Tu vas recevoir un email de confirmation."
       send_paranoid_instructions: "Si ton email existe, tu recevras un lien de confirmation."
+
     passwords:
       send_instructions: "Tu vas recevoir un email pour réinitialiser ton mot de passe."
       updated: "Ton mot de passe a été mis à jour ✅"
       updated_not_active: "Ton mot de passe a été mis à jour ✅"
+
     mailer:
       confirmation_instructions:
         subject: "Confirme ton compte mes2vis"
@@ -44,6 +50,27 @@ fr:
         email: "Email"
         password: "Mot de passe"
         password_confirmation: "Confirmation du mot de passe"
+
+      client:
+        name: "Nom"
+        contact_name: "Contact"
+        email: "Email"
+        phone: "Téléphone"
+        address: "Adresse"
+        zip_code: "Code postal"
+        city: "Ville"
+        country: "Pays"
+        vat_number: "N° TVA"
+        client_type: "Type de client"
+        siren: "SIREN"
+
+      invoice:
+        client: "Client"
+        issue_date: "Date d’émission"
+        due_date: "Date d’échéance"
+        number: "Numéro de facture"
+        total_cents: "Total"
+
     errors:
       models:
         user:
@@ -57,3 +84,33 @@ fr:
               too_short: "est trop court (minimum %{count} caractères)"
             password_confirmation:
               confirmation: "ne correspond pas au mot de passe"
+
+        client:
+          attributes:
+            name:
+              blank: "ne peut pas être vide"
+            email:
+              blank: "ne peut pas être vide"
+              invalid: "n’est pas valide"
+            address:
+              blank: "ne peut pas être vide"
+            client_type:
+              inclusion: "n’est pas valide"
+            siren:
+              blank: "est obligatoire pour un client professionnel"
+              wrong_length: "doit contenir 9 chiffres"
+              invalid: "doit contenir uniquement des chiffres"
+
+        invoice:
+          attributes:
+            client:
+              blank: "doit être renseigné"
+            issue_date:
+              blank: "doit être renseignée"
+            due_date:
+              blank: "doit être renseignée"
+            number:
+              taken: "est déjà utilisé"
+
+            base:
+              professional_client_missing_siren: "Impossible de créer la facture : le client professionnel doit avoir un SIREN."

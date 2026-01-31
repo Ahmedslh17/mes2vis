@@ -1,0 +1,30 @@
+fr:
+  errors:
+    messages:
+      required: "doit être renseigné"
+      blank: "ne peut pas être vide"
+
+  activerecord:
+    models:
+      invoice: "Facture"
+
+    attributes:
+      invoice:
+        client: "Client"
+        client_id: "Client"
+        number: "Numéro"
+        status: "Statut"
+        issue_date: "Date d’émission"
+        due_date: "Date d’échéance"
+        notes: "Conditions"
+
+    errors:
+      models:
+        invoice:
+          attributes:
+            client:
+              required: "doit être sélectionné"
+              blank: "doit être sélectionné"
+            client_id:
+              required: "doit être sélectionné"
+              blank: "doit être sélectionné"

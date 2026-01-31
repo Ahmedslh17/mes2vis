@@ -1,18 +1,11 @@
-<!-- =======================
-     REGISTRATION (devise) - new.html.erb
-     ======================= -->
+<!-- app/views/devise/registrations/new.html.erb -->
 <div class="flex min-h-[95vh] items-center justify-center px-4 py-10">
   <div class="w-full max-w-7xl">
-    <!-- Carte centrale -->
     <div class="overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-slate-200 grid md:grid-cols-[1fr_1fr] min-h-[75vh]">
 
-      <!-- ================= PANEL GAUCHE ================= -->
+      <!-- PANEL GAUCHE -->
       <div class="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-fuchsia-500 text-white px-10 py-14 flex flex-col justify-between">
-
-        <!-- Haut -->
         <div class="space-y-10">
-
-          <!-- Badge -->
           <div>
             <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-[12px] font-medium backdrop-blur-sm shadow-sm">
               <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
@@ -20,7 +13,6 @@
             </div>
           </div>
 
-          <!-- Logo + nom -->
           <div class="flex items-center gap-3">
             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 text-xl font-semibold text-indigo-700 shadow">
               m2
@@ -31,7 +23,6 @@
             </div>
           </div>
 
-          <!-- Titre large -->
           <div class="space-y-4">
             <h1 class="text-3xl font-semibold tracking-tight leading-tight">
               Inscris-toi et commence à créer tes factures en quelques secondes
@@ -42,18 +33,15 @@
             </p>
           </div>
 
-          <!-- Points clés -->
           <div class="space-y-3 text-sm text-indigo-100/90">
             <div class="flex items-start gap-3">
               <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
               <p>Création de facture intuitive et personnalisée.</p>
             </div>
-
             <div class="flex items-start gap-3">
               <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
               <p>Gestion complète des statuts : payée, en attente, en retard.</p>
             </div>
-
             <div class="flex items-start gap-3">
               <span class="mt-[3px] inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-300/90 text-[10px] font-bold text-emerald-900">✓</span>
               <p>Interface premium pensée pour les professionnels.</p>
@@ -61,34 +49,39 @@
           </div>
         </div>
 
-        <!-- Bas -->
         <p class="mt-10 text-[11px] text-indigo-100/60">
           © <%= Time.current.year %> mes2vis — Tous droits réservés
         </p>
       </div>
 
-      <!-- ================= PANEL DROIT (FORM) ================= -->
+      <!-- PANEL DROIT -->
       <div class="relative px-14 py-14 bg-white flex flex-col justify-start">
-
-        <!-- Logo violet au-dessus du titre -->
         <div class="mb-6 flex justify-center">
           <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-fuchsia-500 text-lg font-semibold text-white shadow">
             m2
           </div>
         </div>
 
-        <!-- Titre + sous-titre -->
         <div class="mb-10 text-center">
-          <p class="text-2xl font-bold tracking-tight text-slate-900">
-            Créer un compte
-          </p>
-
+          <p class="text-2xl font-bold tracking-tight text-slate-900">Créer un compte</p>
           <p class="mt-2 text-sm text-slate-500 max-w-sm mx-auto">
             Configure ton espace professionnel mes2vis en moins d’une minute.
           </p>
         </div>
 
-        <!-- Erreurs Devise -->
+        <!-- ✅ FLASH (vert = notice, rouge = alert) -->
+        <% if notice.present? %>
+          <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            ✅ <%= notice %>
+          </div>
+        <% end %>
+
+        <% if alert.present? %>
+          <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            ⚠️ <%= alert %>
+          </div>
+        <% end %>
+
         <%= render "devise/shared/error_messages", resource: resource %>
 
         <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
@@ -108,53 +101,100 @@
             </div>
           </div>
 
-          <!-- Mot de passe -->
-          <div class="mb-6">
-            <div class="flex items-center justify-between">
+          <div data-controller="password">
+            <!-- Password -->
+            <div class="mb-6">
               <%= f.label :password, "Mot de passe",
                   class: "block text-xs font-medium uppercase tracking-wide text-slate-600" %>
+
+              <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
+                Le mot de passe doit contenir :
+                <br>• au moins 8 caractères
+                <br>• une majuscule et une minuscule
+                <br>• un chiffre
+                <br>• un caractère spécial (!@#$…)
+              </p>
+
+              <div class="mt-2 relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
+
+                <%= f.password_field :password,
+                      autocomplete: "new-password",
+                      placeholder: "Mot de passe",
+                      data: { password_target: "password", action: "input->password#validate" },
+                      class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-16 py-3 text-sm shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+
+                <button
+                  type="button"
+                  data-action="click->password#togglePassword"
+                  data-password-target="togglePassword"
+                  aria-label="Afficher le mot de passe"
+                  class="absolute inset-y-0 right-3 z-50 flex items-center justify-center">
+                  <span class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-slate-100">
+                    <svg data-password-target="eyeOpen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                      <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+
+                    <svg data-password-target="eyeOff" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5 hidden">
+                      <path d="M3 3l18 18"/>
+                      <path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/>
+                      <path d="M9.4 5.1A10.3 10.3 0 0 1 12 5c6 0 9.5 7 9.5 7"/>
+                      <path d="M6.6 6.6C3.6 8.8 2.5 12 2.5 12S6 19 12 19"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
             </div>
 
-            <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
-              Le mot de passe doit contenir :
-              <br>• au moins 8 caractères
-              <br>• une majuscule et une minuscule
-              <br>• un chiffre
-              <br>• un caractère spécial (!@#$…)
-            </p>
+            <!-- Confirmation -->
+            <div class="mb-8">
+              <%= f.label :password_confirmation, "Confirmer le mot de passe",
+                  class: "block text-xs font-medium uppercase tracking-wide text-slate-600" %>
 
-            <div class="mt-2 relative">
-              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
-              <%= f.password_field :password,
-                    autocomplete: "new-password",
-                    placeholder: "Mot de passe",
-                    class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+              <div class="mt-2 relative">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
+
+                <%= f.password_field :password_confirmation,
+                      autocomplete: "new-password",
+                      placeholder: "Confirmer le mot de passe",
+                      data: { password_target: "confirmation", action: "input->password#validate" },
+                      class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-16 py-3 text-sm shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
+
+                <button
+                  type="button"
+                  data-action="click->password#toggleConfirmation"
+                  data-password-target="toggleConfirmation"
+                  aria-label="Afficher le mot de passe"
+                  class="absolute inset-y-0 right-3 z-50 flex items-center justify-center">
+                  <span class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-slate-100">
+                    <svg data-password-target="eyeOpenConfirmation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                      <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+
+                    <svg data-password-target="eyeOffConfirmation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5 hidden">
+                      <path d="M3 3l18 18"/>
+                      <path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/>
+                      <path d="M9.4 5.1A10.3 10.3 0 0 1 12 5c6 0 9.5 7 9.5 7"/>
+                      <path d="M6.6 6.6C3.6 8.8 2.5 12 2.5 12S6 19 12 19"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+
+              <p class="mt-2 text-xs hidden" data-password-target="confirmMessage"></p>
             </div>
           </div>
 
-          <!-- Confirmation -->
-          <div class="mb-8">
-            <%= f.label :password_confirmation, "Confirmer le mot de passe",
-                class: "block text-xs font-medium uppercase tracking-wide text-slate-600" %>
-
-            <div class="mt-2 relative">
-              <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔒</span>
-              <%= f.password_field :password_confirmation,
-                    autocomplete: "new-password",
-                    placeholder: "Confirmer le mot de passe",
-                    class: "w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 py-3 text-sm shadow-sm placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition" %>
-            </div>
-          </div>
-
-          <!-- Bouton inscription -->
           <div>
             <%= f.submit "Créer mon compte",
+                data: { password_target: "submit" },
                 class: "w-full cursor-pointer rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition" %>
           </div>
 
         <% end %>
 
-        <!-- Lien connexion -->
         <p class="mt-6 text-center text-xs text-slate-500">
           Déjà un compte ?
           <%= link_to "Se connecter",

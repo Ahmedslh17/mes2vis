@@ -28,6 +28,32 @@ class Company < ApplicationRecord
 
   before_save :purge_logo_if_needed
 
+  # ==========================
+  # PDP CONFIG (SaaS READY)
+  # ==========================
+
+  # PDP choisie pour cette entreprise
+  # (ex: "sage", "pennylane", "tiime")
+  def pdp_provider
+    self[:pdp_provider].presence || "sage"
+  end
+
+  # Identifiant entreprise côté PDP
+  # (fourni par la PDP après onboarding)
+  def pdp_company_external_id
+    self[:pdp_company_external_id]
+  end
+
+  # Clé API spécifique entreprise (optionnel / futur)
+  def pdp_api_key
+    self[:pdp_api_key]
+  end
+
+  # Est-ce que l’entreprise est prête côté PDP ?
+  def pdp_configured?
+    pdp_company_external_id.present?
+  end
+
   private
 
   def purge_logo_if_needed

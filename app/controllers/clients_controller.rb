@@ -24,7 +24,7 @@ class ClientsController < ApplicationController
     if @client.save
       redirect_to clients_path, notice: "Client créé avec succès."
     else
-      flash.now[:alert] = "Erreur lors de la création du client."
+      # ✅ Pas de flash global : on affiche uniquement le bloc d'erreurs dans la vue
       render :new, status: :unprocessable_entity
     end
   end
@@ -36,7 +36,7 @@ class ClientsController < ApplicationController
     if @client.update(client_params)
       redirect_to client_path(@client), notice: "Client mis à jour avec succès."
     else
-      flash.now[:alert] = "Erreur lors de la mise à jour du client."
+      # ✅ Pas de flash global : on affiche uniquement le bloc d'erreurs dans la vue
       render :edit, status: :unprocessable_entity
     end
   end
@@ -57,17 +57,18 @@ class ClientsController < ApplicationController
   end
 
   def client_params
-  params.require(:client).permit(
-    :name,
-    :contact_name,
-    :email,
-    :phone,            # ← AJOUT OBLIGATOIRE
-    :address,
-    :zip_code,
-    :city,
-    :country,
-    :vat_number
-  )
-end
-
+    params.require(:client).permit(
+      :name,
+      :contact_name,
+      :email,
+      :phone,
+      :address,
+      :zip_code,
+      :city,
+      :country,
+      :vat_number,
+      :client_type,
+      :siren
+    )
+  end
 end

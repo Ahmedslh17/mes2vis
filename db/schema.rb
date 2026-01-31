@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_14_163817) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_20_092435) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -55,6 +55,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_14_163817) do
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "client_type", default: "particulier", null: false
+    t.string "siren"
     t.index ["company_id"], name: "index_clients_on_company_id"
   end
 
@@ -110,6 +112,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_14_163817) do
     t.datetime "paid_at"
     t.string "payment_method"
     t.text "payment_notes"
+    t.string "operation_category"
+    t.text "delivery_address"
+    t.string "pdp_status", default: "draft", null: false
+    t.string "pdp_external_id"
+    t.text "pdp_errors"
     t.index ["client_id"], name: "index_invoices_on_client_id"
     t.index ["company_id", "number"], name: "index_invoices_on_company_id_and_number", unique: true
     t.index ["company_id"], name: "index_invoices_on_company_id"

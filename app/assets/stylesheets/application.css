@@ -1,4 +1,3 @@
-/* app/assets/stylesheets/application.css */
 /*
  * This is a manifest file that'll be compiled into application.css, which will include all the files
  * listed below.
@@ -15,14 +14,39 @@
  *= require_self
  */
 
-/* ✅ Fix: points du password toujours visibles + texte bien noir */
+/* =======================================================
+   PASSWORD INPUT – FIX UI PRO
+   - Cache les icônes navigateur (Edge / Chrome / IE)
+   - Garde les points visibles
+   - Ne casse pas Tailwind (pr-24, padding custom, etc.)
+   ======================================================= */
+
+/* Texte & caret propres */
 input[type="password"] {
   -webkit-text-security: disc;
   color: #0f172a !important; /* slate-900 */
   caret-color: #0f172a !important;
 }
 
-/* ✅ Fix: évite un rendu trop clair selon certains navigateurs */
+/* Placeholder plus doux */
 input[type="password"]::placeholder {
   color: rgba(15, 23, 42, 0.45);
+}
+
+/* Edge / IE : cache le bouton "révéler" + clear */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* Chrome / Edge Chromium : bouton credentials / autofill */
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
+
+/* Décorations internes Chromium */
+input[type="password"]::-webkit-textfield-decoration-container {
+  visibility: hidden;
 }
