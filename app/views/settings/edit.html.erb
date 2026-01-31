@@ -9,7 +9,7 @@
 
   <span class="hidden sm:inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white ring-1 ring-white/10">
     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-    Informations utilisées sur tes factures
+    Informations utilisées sur vos factures
   </span>
 </div>
 
@@ -22,7 +22,7 @@
           Impossible d’enregistrer les paramètres
         </p>
         <p class="mt-1 text-xs text-rose-700/80">
-          Corrige les champs ci-dessous puis réessaie.
+          Corrigez les champs ci-dessous puis réessayez.
         </p>
       </div>
       <span class="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-rose-100 text-rose-700 ring-1 ring-rose-200">⚠️</span>
@@ -56,7 +56,7 @@
           Profil de l’entreprise
         </h1>
         <p class="mt-1 text-sm text-slate-600 max-w-2xl">
-          Ces informations apparaîtront sur tes factures, devis et emails. Mets-les à jour pour garder une présentation pro.
+          Ces informations apparaîtront sur vos factures, devis et emails. Mettez-les à jour pour conserver une présentation professionnelle.
         </p>
       </div>
 
@@ -126,86 +126,85 @@
       </section>
 
       <!-- LOGO -->
-<section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden"
-         data-controller="logo-preview">
-  <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-3">
-    <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-      <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
-      Logo
-    </h2>
-    <span class="rounded-full bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-3 py-1 text-[11px] font-semibold text-violet-700 ring-1 ring-slate-200">
-      Recommandé : PNG/JPG 400×400
-    </span>
-  </div>
-
-  <div class="p-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-    <div class="flex items-center gap-4">
-      <%# ✅ Aperçu existant (si déjà attaché) %>
-      <% if @company.logo&.attached? %>
-        <div class="h-20 w-20 flex items-center justify-center rounded-2xl bg-slate-100 overflow-hidden ring-1 ring-slate-200">
-          <%= image_tag @company.logo.variant(resize_to_limit: [160, 160]),
-                class: "object-contain h-full w-full",
-                data: { "logo-preview-target": "img" } %>
+      <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden"
+               data-controller="logo-preview">
+        <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-3">
+          <h2 class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+            <span class="h-1.5 w-1.5 rounded-full bg-violet-600"></span>
+            Logo
+          </h2>
+          <span class="rounded-full bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 px-3 py-1 text-[11px] font-semibold text-violet-700 ring-1 ring-slate-200">
+            Recommandé : PNG/JPG 400×400
+          </span>
         </div>
-      <% else %>
-        <%# ✅ Image preview (hidden au départ) %>
-        <div class="h-20 w-20 flex items-center justify-center rounded-2xl bg-slate-100 overflow-hidden ring-1 ring-slate-200">
-          <img
-            data-logo-preview-target="img"
-            class="hidden object-contain h-full w-full"
-            alt="Aperçu logo">
-          <div
-            data-logo-preview-target="placeholder"
-            class="flex h-full w-full items-center justify-center rounded-2xl text-white text-xl font-semibold shadow-sm
-                   bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
-            <%= @company.name.to_s.first(2).upcase %>
+
+        <div class="p-6 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-4">
+            <%# ✅ Aperçu existant (si déjà attaché) %>
+            <% if @company.logo&.attached? %>
+              <div class="h-20 w-20 flex items-center justify-center rounded-2xl bg-slate-100 overflow-hidden ring-1 ring-slate-200">
+                <%= image_tag @company.logo.variant(resize_to_limit: [160, 160]),
+                      class: "object-contain h-full w-full",
+                      data: { "logo-preview-target": "img" } %>
+              </div>
+            <% else %>
+              <%# ✅ Image preview (hidden au départ) %>
+              <div class="h-20 w-20 flex items-center justify-center rounded-2xl bg-slate-100 overflow-hidden ring-1 ring-slate-200">
+                <img
+                  data-logo-preview-target="img"
+                  class="hidden object-contain h-full w-full"
+                  alt="Aperçu du logo">
+                <div
+                  data-logo-preview-target="placeholder"
+                  class="flex h-full w-full items-center justify-center rounded-2xl text-white text-xl font-semibold shadow-sm
+                         bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-500">
+                  <%= @company.name.to_s.first(2).upcase %>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-900">Aperçu du logo</p>
+              <p class="mt-1 text-xs text-slate-600 max-w-sm">
+                Le logo s’affiche sur vos factures et emails. Utilisez un fond transparent si possible.
+              </p>
+            </div>
+          </div>
+
+          <div class="w-full md:w-[380px] space-y-3">
+            <div>
+              <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Choisir un fichier</label>
+
+              <div class="mt-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200/60">
+                <%= f.file_field :logo,
+                      accept: "image/png,image/jpeg,image/webp",
+                      data: {
+                        "logo-preview-target": "input",
+                        action: "change->logo-preview#change"
+                      },
+                      class: "block w-full text-xs text-slate-700
+                              file:mr-3 file:w-auto
+                              file:rounded-xl file:border-2 file:border-slate-900
+                              file:bg-white file:px-3 file:py-1.5
+                              file:text-[11px] file:font-extrabold file:uppercase file:tracking-wide
+                              file:text-slate-900 hover:file:bg-slate-50
+                              focus:outline-none" %>
+
+                <p class="mt-2 text-[11px] text-slate-500">
+                  PNG/JPG/WebP — recommandé 400×400, idéalement 1–2 Mo max.
+                </p>
+              </div>
+            </div>
+
+            <% if @company.logo&.attached? %>
+              <div class="flex items-center gap-2 text-xs rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2">
+                <%= f.check_box :remove_logo, class: "rounded border-slate-300 text-violet-600 focus:ring-violet-500" %>
+                <%= f.label :remove_logo, "Supprimer le logo", class: "text-slate-700 font-semibold" %>
+              </div>
+            <% end %>
           </div>
         </div>
-      <% end %>
-
-      <div class="min-w-0">
-        <p class="text-sm font-semibold text-slate-900">Aperçu du logo</p>
-        <p class="mt-1 text-xs text-slate-600 max-w-sm">
-          Le logo s’affiche sur tes factures et emails. Utilise un fond transparent si possible.
-        </p>
-      </div>
-    </div>
-
-    <div class="w-full md:w-[380px] space-y-3">
-      <div>
-        <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Choisir un fichier</label>
-
-        <div class="mt-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm ring-1 ring-slate-200/60">
-          <%= f.file_field :logo,
-                accept: "image/png,image/jpeg,image/webp",
-                data: {
-                  "logo-preview-target": "input",
-                  action: "change->logo-preview#change"
-                },
-                class: "block w-full text-xs text-slate-700
-                        file:mr-3 file:w-auto
-                        file:rounded-xl file:border-2 file:border-slate-900
-                        file:bg-white file:px-3 file:py-1.5
-                        file:text-[11px] file:font-extrabold file:uppercase file:tracking-wide
-                        file:text-slate-900 hover:file:bg-slate-50
-                        focus:outline-none" %>
-
-          <p class="mt-2 text-[11px] text-slate-500">
-            PNG/JPG/WebP — recommandé 400×400, idéalement 1–2 Mo max.
-          </p>
-        </div>
-      </div>
-
-      <% if @company.logo&.attached? %>
-        <div class="flex items-center gap-2 text-xs rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2">
-          <%= f.check_box :remove_logo, class: "rounded border-slate-300 text-violet-600 focus:ring-violet-500" %>
-          <%= f.label :remove_logo, "Supprimer le logo", class: "text-slate-700 font-semibold" %>
-        </div>
-      <% end %>
-    </div>
-  </div>
-</section>
-
+      </section>
 
       <!-- COORDONNÉES -->
       <section class="rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
@@ -344,7 +343,7 @@
 
   <div class="p-6">
     <p class="text-sm text-slate-700">
-      Supprimer ton compte effacera <strong>définitivement</strong> ton entreprise, tes clients et toutes tes factures.
+      Supprimer votre compte effacera <strong>définitivement</strong> votre entreprise, vos clients et toutes vos factures.
       Cette action est irréversible.
     </p>
 
@@ -353,7 +352,7 @@
             registration_path(:user),
             method: :delete,
             data: {
-              turbo_confirm: "⚠️ Es-tu sûr de vouloir supprimer ton compte ?\nToutes les données associées seront effacées."
+              turbo_confirm: "⚠️ Êtes-vous sûr de vouloir supprimer votre compte ?\nToutes les données associées seront effacées."
             },
             class: "inline-flex items-center justify-center rounded-2xl bg-rose-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition cursor-pointer" %>
     </div>

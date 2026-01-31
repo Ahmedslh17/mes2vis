@@ -66,7 +66,7 @@
             <div>
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Vue d’ensemble</p>
               <h2 class="mt-1 text-lg font-semibold text-slate-900">Résumé</h2>
-              <p class="mt-1 text-xs text-slate-500">Basé sur ta base clients.</p>
+              <p class="mt-1 text-xs text-slate-500">Basé sur votre base clients.</p>
             </div>
 
             <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-3 py-2 text-right">
@@ -79,7 +79,7 @@
             <div class="rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
               <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Clients actifs</p>
               <p class="mt-2 text-2xl font-semibold text-slate-900"><%= total_clients %></p>
-              <p class="mt-1 text-[11px] text-slate-500">Présents dans ta base.</p>
+              <p class="mt-1 text-[11px] text-slate-500">Présents dans votre base.</p>
             </div>
 
             <div class="rounded-2xl bg-indigo-50 ring-1 ring-indigo-200 p-4">
@@ -165,7 +165,7 @@
           <% else %>
             <div class="mt-4 rounded-2xl bg-slate-50 ring-1 ring-slate-200 p-4">
               <p class="text-sm font-semibold text-slate-900">Pas de classement</p>
-              <p class="mt-1 text-xs text-slate-600">Crée quelques factures pour voir les meilleurs clients ici.</p>
+              <p class="mt-1 text-xs text-slate-600">Créez quelques factures pour afficher les meilleurs clients ici.</p>
             </div>
           <% end %>
         </div>
@@ -320,7 +320,7 @@
                       <%= button_to "Supprimer",
                                     client_path(client),
                                     method: :delete,
-                                    data: { turbo_confirm: "Tu es sûr de vouloir supprimer ce client ?" },
+                                    data: { turbo_confirm: "Êtes-vous sûr de vouloir supprimer ce client ?" },
                                     class: "inline-flex items-center rounded-2xl bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100 transition" %>
                     </div>
                   </td>
@@ -341,7 +341,7 @@
       </div>
       <h2 class="text-lg font-semibold text-slate-900">Aucun client</h2>
       <p class="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-        Ajoute ton premier client pour commencer à facturer proprement.
+        Ajoutez votre premier client pour commencer à facturer proprement.
       </p>
       <div class="mt-5">
         <%= link_to "Ajouter un client",
