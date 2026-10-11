@@ -49,8 +49,8 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address:              "smtp.hostinger.com",
     port:                 587,
-    user_name:            ENV["SMTP_USERNAME"],   # => "notifications@mes2vis.com"
-    password:             ENV["SMTP_PASSWORD"],   # => mot de passe de cette boîte mail
+    user_name:            "notifications@mes2vis.com",
+    password:             "M2Vis17.!",
     authentication:       :plain,
     enable_starttls_auto: true
   }

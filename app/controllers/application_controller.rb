@@ -7,8 +7,6 @@ class ApplicationController < ActionController::Base
   end
 
   def after_sign_up_path_for(resource)
-    # Si confirmable est activé, Devise peut ne pas connecter l'utilisateur.
-    # Dans tous les cas, on évite la landing.
     dashboard_path
   end
 
@@ -27,6 +25,9 @@ class ApplicationController < ActionController::Base
       "devise/sessions#new", "devise/sessions#create",
       "devise/registrations#new", "devise/registrations#create",
 
+      # Devise : Passwords (Mot de passe oublié / Réinitialisation) 👈 AJOUTÉ ICI
+      "devise/passwords#new", "devise/passwords#create", "devise/passwords#edit", "devise/passwords#update",
+
       # Confirmations (ton controller custom)
       "users/confirmations#new", "users/confirmations#create", "users/confirmations#show",
 
@@ -43,17 +44,14 @@ class ApplicationController < ActionController::Base
   def require_subscription_for_second_invoice!
     return unless user_signed_in?
 
-    # Déjà abonné => OK
     return if current_user.subscribed?
 
     company = current_user.company
     return if company.nil?
 
-    # 0 facture => encore dans l'essai gratuit => OK
     invoices_count = company.invoices.count
     return if invoices_count < 1
 
-    # Sinon => abo requis
     redirect_to subscription_path, alert: "Tu as utilisé ta facture gratuite. Active ton abonnement pour créer d’autres factures."
   end
 end
